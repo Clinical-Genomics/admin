@@ -38,12 +38,12 @@ class Customer(Model):
     delivery_contact_id = Column(ForeignKey('user.id'))
     uppmax_account = Column(types.String(32))
     project_account_ki = Column(types.String(32))
+    project_account_kth = Column(types.String(32))
     organisation_number = Column(types.String(32))
     invoice_address = Column(types.Text)
     invoice_reference = Column(types.String(32))
     invoice_contact_id = Column(ForeignKey('user.id'))
 
-    projects = orm.relationship('Project', cascade='all,delete', backref='customer')
     primary_contact = orm.relationship('User', foreign_keys=[primary_contact_id])
     delivery_contact = orm.relationship('User', foreign_keys=[delivery_contact_id])
     invoice_contact = orm.relationship('User', foreign_keys=[invoice_contact_id])
@@ -88,6 +88,7 @@ class Project(Model):
     user_id = Column(ForeignKey(User.id), nullable=False)
     is_locked = Column(types.Boolean)
 
+    customer = orm.relationship(Customer, cascade='all,delete', backref='projects')
     families = orm.relationship('Family', cascade='all,delete',
                                 backref='project')
 
