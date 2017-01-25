@@ -1,0 +1,46 @@
+{% from "forms.html" import sample_row_form %}
+
+{% macro family_panel(family, constants, apptags, add_new=False) %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a href="{{ url_for('family', family_id=family.id) }}">{{ family.name }}</a>
+
+        <span class="label label-default">{{ family.priority }}</span>
+        <span class="label label-default">{{ family.delivery_type }}</span>
+        <span class="label label-default">{{ family.panels|join(', ') }}</span>
+      </h4>
+    </div>
+    {% if family.samples or add_new %}
+      {{ samples_table(family.samples, constants, apptags, add_new=add_new, family_id=family.id) }}
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro samples_table(samples, constants, apptags, add_new=False, family_id=None) %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Sex</th>
+        <th>Status</th>
+        <th>Application tag</th>
+        <th>Father</th>
+        <th>Mother</th>
+        <th>Source</th>
+        <th>Container</th>
+        <th>Container name</th>
+        <th>Well position</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sample in samples %}
+        {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list)) }}
+      {% endfor %}
+      {% if add_new %}
+        {{ sample_row_form(constants, apptags, family_id=family_id, other_samples=samples) }}
+      {% endif %}
+    </tbody>
+  </table>
+{% endmacro %}

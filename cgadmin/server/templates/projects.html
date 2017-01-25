@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% from "forms.html" import project_form, select_box %}
+
+{% block content_main %}
+  {% if current_user.customers %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Pending projects</h4>
+      </div>
+      <ul class="list-group">
+        {% for project in projects %}
+          <li class="list-group-item">
+            {% if project.is_locked %}
+              {{ project.name }} (submitted)
+            {% else %}
+              <a href="{{ url_for('project', project_id=project.id) }}">
+                {{ project.name }}
+              </a>
+            {% endif %}
+            <span class="label label-info">{{ project.user.name }}</span>
+          </li>
+        {% else %}
+          <li class="list-group-item">No projects added yet</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <form method="POST" action="{{ url_for('projects') }}">
+      <div class="panel panel-default">
+        <div class="panel-heading">New project</div>
+        <div class="panel-body">
+          {{ project_form(constants, user=current_user) }}
+        </div>
+        <div class="panel-footer">
+          <button type="submit" class="btn btn-primary form-control">Add</button>
+        </div>
+      </div>
+    </form>
+  {% else %}
+    <h4>Which customer do you belong to?</h4>
+    <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">
+      <div class="row">
+        <div class="col-xs-8">
+          <select class="form-control" name="customers" multiple required>
+            {% for customer in customers %}
+              <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-xs-4">
+          <button type="submit" class="btn btn-primary form-control">Save</button>
+        </div>
+      </div>
+    </form>
+  {% endif %}
+{% endblock %}
+

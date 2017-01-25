@@ -1,0 +1,6 @@
+Flask
+Flask-Bootstrap
+sqlservice
+sqlalchemy_utils
+wtforms-alchemy
+ruamel.yaml

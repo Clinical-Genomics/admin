@@ -1,0 +1,15 @@
+{% extends 'admin/master.html' %}
+
+{% block title %}
+  Clinical Genomics - Orders
+{% endblock %}
+
+{% block access_control %}
+  <li><a href="{{ url_for('index') }}">Home</a></li>
+{% endblock %}
+
+{% block body %}
+  <p>
+    <a href="{{ url_for('index') }}">Home</a>
+  </p>
+{% endblock %}
