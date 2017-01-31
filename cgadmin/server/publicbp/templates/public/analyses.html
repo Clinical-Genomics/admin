@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block content_main %}
+  <div class="row">
+    <div class="col-sm-3 col-md-3 sidebar">
+      <div class="btn-group btn-group-justified">
+        <a href="https://clinical-scilifelab.supportsystem.com/open.php" class="btn btn-default">Ny ticket</a>
+        <a href="https://clinical-scilifelab.supportsystem.com/view.php" class="btn btn-default">Ticketstatus</a>
+      </div>
+      <ul class="list-group">
+        <li class="list-group-item">Robin</li>
+      </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-9 col-md-offset-3 main">
+      <h1>Analyser</h1>
+      <p>För varje projekt identifierar vi tillsammans de methoder (laborativa och bioinformatiska) som behövs och därefter sätter vi upp analysen. Varje analys definieras med hjälp av en unik analyskod som entydigt definierar hur analysen skall utföras. Det är viktigt att rätt kod används i beställningsformuläret.</p>
+      <p>Följande analyser finns uppsatta och är beställningsbara. Antalet reads kan justeras enligt önskemål och nedan följer exempel på analyser med 100 M läspar för exomprover och 60X/30X för WGS prover. Kontakta oss ifall någon annan typ av analys behövs.</p>
+
+      <h2>Ackrediterade analyser</h2>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th class="col-xs-2">Analyskod</th>
+            <th class="col-xs-5">Beskrivning</th>
+            <th class="col-xs-1">Sekvenseringsdjup</th>
+            <th class="col-xs-4">Övrigt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for apptag in db.ApplicationTag %}
+            {% if apptag.latest %}
+              <tr>
+                <td>{{ apptag.name }}</td>
+                <td>{{ apptag.latest.description }}</td>
+                <td class="text-right">{{ apptag.sequencing_depth }}</td>
+                <td>{{ apptag.latest.comment if apptag.latest.comment }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

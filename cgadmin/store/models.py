@@ -201,6 +201,10 @@ class ApplicationTag(Model):
                                 backref='apptag')
     samples = orm.relationship('Sample', backref='application_tag')
 
+    @property
+    def latest(self):
+        return self.versions[0] if self.versions else None
+
     def __unicode__(self):
         return self.name
 

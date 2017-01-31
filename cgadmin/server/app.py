@@ -13,13 +13,14 @@ from cgadmin.store import models
 from cgadmin import constants
 from .admin import UserManagement
 from .flask_sqlservice import FlaskSQLService
+from .publicbp import blueprint as public_bp
 
 
 app = Flask(__name__)
 SECRET_KEY = 'unsafe!!!'
 BOOTSTRAP_SERVE_LOCAL = 'FLASK_DEBUG' in os.environ
 TEMPLATES_AUTO_RELOAD = True
-SQL_DATABASE_URI = os.environ['ORDERPORTAL_SQL_DATABASE_URI']
+SQL_DATABASE_URI = os.environ['CGADMIN_SQL_DATABASE_URI']
 
 # user management
 GOOGLE_OAUTH_CLIENT_ID = os.environ['GOOGLE_OAUTH_CLIENT_ID']
@@ -190,11 +191,16 @@ def samples(family_id=None, sample_id=None):
     return redirect(url_for('family', family_id=family_obj.id))
 
 
+# register blueprints
+app.register_blueprint(public_bp)
+
 # hookup extensions to app
 db.init_app(app)
 user.init_app(app)
 Bootstrap(app)
 admin.init_app(app)
+
+app.jinja_env.globals.update(db=db)
 
 
 class ProtectedModelView(ModelView):

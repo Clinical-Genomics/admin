@@ -93,7 +93,7 @@
       <td>{{ select_box('sex', constants.SEXES, sample.sex if sample) }}</td>
       <td>{{ select_box('status', constants.STATUSES, sample.status if sample) }}</td>
       <td>
-        {{ select_box('application_tag', apptags, sample.application_tag if sample, records=True) }}
+        {{ select_box('application_tag', apptags, sample.application_tag.id if sample, records=True) }}
       </td>
       <td>
         {% if other_samples %}
