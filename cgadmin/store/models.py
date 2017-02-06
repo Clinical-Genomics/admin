@@ -228,6 +228,7 @@ class ApplicationTagVersion(Model):
     price_reserach = Column(types.Integer)
     is_accredited = Column(types.Boolean)
     description = Column(types.Text)
+    limitations = Column(types.Text)
     comment = Column(types.Text)
     percent_kth = Column(types.Integer)
 
