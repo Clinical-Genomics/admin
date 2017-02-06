@@ -245,6 +245,10 @@ class Method(Model):
     description = Column(types.Text, nullable=False)
     limitations = Column(types.Text)
 
+    def full_name(self):
+        """Return the full name with number and version."""
+        return "{this.document}:{this.document_version} {this.name}".format(this=self)
+
 
 class Invoice(Model):
 

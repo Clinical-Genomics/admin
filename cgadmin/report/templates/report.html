@@ -1,0 +1,186 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Clinical Genomics Report - {{ family_id }}</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">Leveransrapport Clinical Genomics</h4>
+        </div>
+
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            Leveransrapport för {{ customer.name }}, familj {{ family_id }}<br>
+            Datum: {{ today.date() }}
+          </li>
+        </ul>
+
+        <div class="card-block">
+          <div class="row">
+            <div class="col">
+              <h4>Kontakt Clinical Genomics</h4>
+              <address>
+                <strong>Clinical Genomics</strong><br>
+                Science for Life Laboratory<br>
+                Tomtebodavägen 23<br>
+                171 65 Solna<br>
+                <abbr title="Phone">P:</abbr> (08) 524 81 500
+              </address>
+            </div>
+            <div class="col">
+              <h4>Kundinformation</h4>
+              <address>
+                {{ customer.invoice_address|replace('\n', '<br>')|safe }}
+              </address>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-block">
+          <h4 class="card-title">Beställningsinformation</h4>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Prov</th>
+                <th>Familj</th>
+                <th>Kön</th>
+                <th>Genpanel(er)</th>
+                <th>Ticket</th>
+                <th>Analys</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sample in samples %}
+                <tr>
+                  <td>{{ sample.name }}</td>
+                  <td>{{ family_id }}</td>
+                  <td>
+                    {{ sample.sex }}
+                    ( analys:
+                      {% if sample.sex != sample.sex_predicted %}
+                        <span class="text-danger">{{ sample.sex_predicted }}</span>
+                      {% else %}
+                        <span class="text-success">{{ sample.sex_predicted }}</span>
+                      {% endif %})
+                  </td>
+                  <td>{{ gene_panels|join(', ') }}</td>
+                  <td>{{ sample.project }}</td>
+                  <td>{{ sample.app_tag }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-block">
+          <h4 class="card-title">Metoder</h4>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Prov</th>
+                <th>Ankomstdatum</th>
+                <th>Biblioteksberedning</th>
+                <th>Sekvensering</th>
+                <th>Analys</th>
+                <th>Leveransdatum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sample in samples %}
+                <tr>
+                  <td>{{ sample.name }}</td>
+                  <td>{{ (sample.received_at|date).date() }}</td>
+                  <td>{{ sample.library_prep_method.full_name if sample.library_prep_method else "N/A" }}</td>
+                  <td>{{ sample.sequencing_method or "N/A" }}</td>
+                  <td></td>
+                  <td>{{ (analysis_date|date).date() }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-block">
+          <h4 class="card-title">Analysinformation</h4>
+          <table class="table table-bordered">
+            <thead>
+              <th>Familj</th>
+              <th>MIP-version</th>
+              <th>Genpaneler</th>
+              <th>Genomversion</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ family_id }}</td>
+                <td>{{ pipeline_version }}</td>
+                <td>{{ gene_panels|join(', ') }}</td>
+                <td>{{ reference_genome }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-block">
+          <h4>Analysresultat</h4>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Prov</th>
+                <th>Read pairs [M]</th>
+                <th>Aligned reads [%]</th>
+                <th>Target coverage</th>
+                <th>Target completeness 10x [%]</th>
+                <th>Duplicates [%]</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sample in samples %}
+                <tr>
+                  <td>{{ sample.name }}</td>
+                  <td>{{ sample.read_pairs|int }}</td>
+                  <td>{{ sample.mapped|round(3) * 100 }}</td>
+                  <td>{{ sample.target_coverage|round(3) }}</td>
+                  <td>{{ sample.target_completeness|round(3) * 100 }}</td>
+                  <td>{{ (sample.duplicates * 100)|round(3) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% for apptagv in apptags %}
+          <div class="card-block">
+            <h4 class="card-title">
+              Teknisk beskrivning av analysen: {{ apptagv.apptag.name }}
+            </h4>
+            <p class="card-text">{{ apptagv.description }}</p>
+            <p class="card-text">{{ apptagv.limitations }}</p>
+          </div>
+        {% endfor %}
+
+        <div class="card-block">
+          <h4 class="card-title">Signatur för godkännande av rapport</h4>
+          <p class="card-text">
+            Valtteri Wirta<br>
+            Head of unit, Clinical Genomics
+          </p>
+        </div>
+
+        <div class="card-footer">
+          <div class="text-muted text-center">Slut på rapport</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </body>
+</html>

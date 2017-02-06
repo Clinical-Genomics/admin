@@ -5,6 +5,7 @@ from cglims.api import ClinicalLims
 import click
 import ruamel.yaml
 
+from cgadmin.report.core import report
 from cgadmin.store import api, models
 from cgadmin import lims
 
@@ -17,7 +18,7 @@ def root(context, config, database):
     """Interact with the order portal."""
     context.obj = ruamel.yaml.safe_load(config) if config else {}
     db_uri = (database or context.obj.get('database') or
-              os.environ['ORDERPORTAL_SQL_DATABASE_URI'])
+              os.environ['CGADMIN_SQL_DATABASE_URI'])
     context.obj['db'] = api.connect(db_uri)
 
 
@@ -67,3 +68,6 @@ def process(context, project_id):
                             context.obj['lims']['password'])
     lims_project = lims.add_all(lims_api, new_project)
     click.echo("added new project to LIMS: {}".format(lims_project.id))
+
+
+root.add_command(report)
