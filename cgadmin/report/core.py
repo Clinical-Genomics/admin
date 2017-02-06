@@ -32,15 +32,17 @@ def report(context, in_data):
                                          document_version=doc_version).first()
             sample[method_type] = method
 
-    apptags = []
+    versions = []
     for apptag_id, apptag_version in apptag_ids:
-        apptag = (db.ApplicationTagVersion.join(ApplicationTagVersion.apptag)
-                    .filter(ApplicationTag.name == apptag_id,
-                            ApplicationTagVersion.version == apptag_version)
-                    .first())
-        if apptag:
-            apptags.append(apptag)
-    data['apptags'] = apptags
+        version = (db.ApplicationTagVersion.join(ApplicationTagVersion.apptag)
+                     .filter(ApplicationTag.name == apptag_id,
+                             ApplicationTagVersion.version == apptag_version)
+                     .first())
+        if version:
+            versions.append(version)
+    is_accredited = all(version.apptag.is_accredited for version in versions)
+    data['apptags'] = versions
+    data['accredited'] = is_accredited
 
     env = Environment(
         loader=PackageLoader('cgadmin', 'report/templates'),
