@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 
 from cglims.api import ClinicalLims
@@ -7,15 +8,20 @@ import ruamel.yaml
 
 from cgadmin.report.core import report
 from cgadmin.store import api, models
+from cgadmin.log import init_log
 from cgadmin import lims
+
+log = logging.getLogger(__name__)
 
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-c', '--config', type=click.File('r'))
 @click.option('-d', '--database', help='SQL connection string')
+@click.option('-l', '--log-level', default='INFO')
 @click.pass_context
-def root(context, config, database):
+def root(context, config, database, log_level):
     """Interact with the order portal."""
+    init_log(logging.getLogger(), loglevel=log_level)
     context.obj = ruamel.yaml.safe_load(config) if config else {}
     db_uri = (database or context.obj.get('database') or
               os.environ['CGADMIN_SQL_DATABASE_URI'])
@@ -68,6 +74,25 @@ def process(context, project_id):
                             context.obj['lims']['password'])
     lims_project = lims.add_all(lims_api, new_project)
     click.echo("added new project to LIMS: {}".format(lims_project.id))
+
+
+@root.command()
+@click.option('-f', '--field', 'fields', multiple=True, help='fields to display')
+@click.argument('cust_id')
+@click.pass_context
+def customer(context, cust_id, fields):
+    """Display information about a customer."""
+    cust_obj = context.obj['db'].Customer.filter_by(customer_id=cust_id).first()
+    if cust_obj is None:
+        log.error("can't find customer: %s", cust_id)
+        context.abort()
+    if fields:
+        for field in fields:
+            click.echo(getattr(cust_obj, field))
+    else:
+        raw_output = ruamel.yaml.dump(cust_obj.to_json(),
+                                      Dumper=ruamel.yaml.RoundTripDumper)
+        click.echo(raw_output)
 
 
 root.add_command(report)
