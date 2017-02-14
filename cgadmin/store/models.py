@@ -233,10 +233,10 @@ class ApplicationTagVersion(Model):
     percent_kth = Column(types.Integer)
 
     def __unicode__(self):
-        return "Version {}".format(self.version)
+        return "{}:{}".format(self.apptag.name, self.version)
 
     def __str__(self):
-        return "Version {}".format(self.version)
+        return "{}:{}".format(self.apptag.name, self.version)
 
 
 class Method(Model):
