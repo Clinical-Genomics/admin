@@ -90,7 +90,7 @@ def customer(context, cust_id, fields):
         for field in fields:
             click.echo(getattr(cust_obj, field))
     else:
-        raw_output = ruamel.yaml.dump(cust_obj.to_json(),
+        raw_output = ruamel.yaml.dump(cust_obj.to_dict(),
                                       Dumper=ruamel.yaml.RoundTripDumper)
         click.echo(raw_output)
 
