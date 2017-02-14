@@ -232,6 +232,12 @@ class ApplicationTagVersion(Model):
     comment = Column(types.Text)
     percent_kth = Column(types.Integer)
 
+    def __unicode__(self):
+        return "Version {}".format(self.version)
+
+    def __str__(self):
+        return "Version {}".format(self.version)
+
 
 class Method(Model):
 
