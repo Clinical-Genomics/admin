@@ -273,6 +273,11 @@ def build_sample():
         if sample_data['container'] == '96 well plate':
             sample_data['container_name'] = request.form['container_name']
             sample_data['container_name'] = request.form['well_position']
+    else:
+        # expect capture kit for external samples
+        if 'capture_kit' not in request.form:
+            flash('You need to specify "capture kit" for external samples')
+            return None
 
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:

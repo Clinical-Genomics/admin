@@ -39,3 +39,5 @@ WELL_POSITIONS = ['A:1', 'B:1', 'C:1', 'D:1', 'E:1', 'F:1', 'G:1', 'H:1',
                   'H:10', 'A:11', 'B:11', 'C:11', 'D:11', 'E:11', 'F:11',
                   'G:11', 'H:11', 'A:12', 'B:12', 'C:12', 'D:12', 'E:12',
                   'F:12', 'G:12', 'H:12']
+CAPTURE_KITS = ['Agilent Sureselect CRE', 'Agilent Sureselect V5',
+                'SureSelect Focused Exome', 'other']
