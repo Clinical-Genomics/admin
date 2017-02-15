@@ -176,18 +176,19 @@ def samples(family_id=None, sample_id=None):
         return abort(500)
 
     sample_data = build_sample()
-    customer_id = family_obj.project.customer.customer_id
-    check_samplename(customer_id, sample_data['name'])
+    if sample_data:
+        customer_id = family_obj.project.customer.customer_id
+        check_samplename(customer_id, sample_data['name'])
 
-    if family_id:
-        sample_data['family_id'] = family_id
-        sample_obj = db.Sample.save(sample_data)
-    elif sample_id:
-        sample_obj.update(sample_data)
-        db.Sample.save(sample_obj)
+        if family_id:
+            sample_data['family_id'] = family_id
+            sample_obj = db.Sample.save(sample_data)
+        elif sample_id:
+            sample_obj.update(sample_data)
+            db.Sample.save(sample_obj)
 
-    check_triotag(family_obj)
-    flash("{} updated".format(sample_obj.name), 'info')
+        check_triotag(family_obj)
+        flash("{} updated".format(sample_obj.name), 'info')
     return redirect(url_for('family', family_id=family_obj.id))
 
 
@@ -253,14 +254,26 @@ def build_sample():
         name=request.form['name'],
         sex=request.form['sex'],
         status=request.form['status'],
-        source=request.form['source'],
-        container=request.form['container'],
     )
+
     apptag_obj = db.ApplicationTag.get(request.form['application_tag'])
     sample_data['application_tag'] = apptag_obj
-    if sample_data['container'] == '96 well plate':
-        sample_data['container_name'] = request.form['container_name']
-        sample_data['container_name'] = request.form['well_position']
+
+    if not apptag_obj.name.startswith('EXX'):
+        # if the sample isn't externally sequenced
+        if 'container' not in request.form:
+            flash('You need to specify a container!', 'warning')
+            return None
+        if 'source' not in request.form:
+            flash('You need to specify "source"', 'warning')
+            return None
+
+        sample_data['source'] = request.form['source']
+        sample_data['container'] = request.form['container']
+        if sample_data['container'] == '96 well plate':
+            sample_data['container_name'] = request.form['container_name']
+            sample_data['container_name'] = request.form['well_position']
+
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:
             parent_sample = db.Sample.get(request.form[parent_id])
