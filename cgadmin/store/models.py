@@ -118,8 +118,7 @@ class Family(Model):
     require_qcok = Column(types.Boolean, default=False)
 
     project_id = Column(ForeignKey(Project.id), nullable=False)
-    samples = orm.relationship('Sample', cascade='all,delete',
-                               backref='family')
+    samples = orm.relationship('Sample', cascade='all,delete', backref='family')
 
     @event.before_save()
     def before_save(mapper, connection, target):

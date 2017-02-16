@@ -69,7 +69,7 @@ def projects(context, submitted):
 @root.command()
 @click.argument('project_id', type=int)
 @click.pass_context
-def process(context, project_id):
+def upload(context, project_id):
     """Create a new LIMS project."""
     new_project = context.obj['db'].Project.get(project_id)
     if not new_project.is_locked:
