@@ -75,6 +75,9 @@ def process(context, project_id):
     if not new_project.is_locked:
         click.echo("project not yet submitted ({})".format(new_project.name))
         context.abort()
+    elif new_project.lims_id:
+        click.echo("project already added to LIMS: {}".format(new_project.lims_id))
+        context.abort()
     lims_api = ClinicalLims(context.obj['lims']['host'],
                             context.obj['lims']['username'],
                             context.obj['lims']['password'])
