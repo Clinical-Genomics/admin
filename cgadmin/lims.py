@@ -20,7 +20,7 @@ def add_all(lims, new_project):
     container_groups = {}
     for new_family in new_project.families:
         for new_sample in new_family.samples:
-            if new_sample.container == 'Tube':
+            if new_sample.is_external or new_sample.container == 'Tube':
                 container_name = new_sample.container_name or new_sample.name
                 container_name_full = "tube_{}".format(container_name)
                 container_groups[container_name_full] = [new_sample]
@@ -52,6 +52,7 @@ def add_all(lims, new_project):
 def add_project(lims, new_project, researcher_id='3'):
     """Create a new project with samples."""
     researcher = Researcher(lims, id=researcher_id)
+    log.info("using researcher: %s", researcher.name)
 
     # create a new LIMS project
     new_limsproject = Project.create(lims, researcher=researcher,
@@ -64,18 +65,17 @@ def add_project(lims, new_project, researcher_id='3'):
 
 
 def add_sample(lims, lims_project, new_sample, lims_container):
-    """Add a new project."""
+    """Add a new sample to the project."""
+    lims_sample = Sample._create(lims, creation_tag='samplecreation',
+                                 name=new_sample.name, project=lims_project)
+    add_sample_udfs(new_sample, lims_sample)
     position = new_sample.well_position or '1:1'
-    lims_sample = Sample.create(lims, lims_container, position,
-                                name=new_sample.name, project=lims_project)
-
-    add_sample_udfs(lims_sample, new_sample)
-    saved_sample = post_sample(lims, lims_sample)
-    return saved_sample
+    lims_sample = save_sample(lims, lims_sample, lims_container, position)
+    return lims_sample
 
 
-def add_sample_udfs(lims_sample, new_sample):
-    """Update sample UDFs."""
+def add_sample_udfs(new_sample, lims_sample):
+    """Determine sample UDFs."""
     new_family = new_sample.family
     lims_sample.udf['priority'] = new_family.priority
     lims_sample.udf['Data Analysis'] = new_family.delivery_type
@@ -83,8 +83,9 @@ def add_sample_udfs(lims_sample, new_sample):
     lims_sample.udf['Gender'] = SEX_MAP.get(new_sample.sex)
     lims_sample.udf['Status'] = new_sample.status
     lims_sample.udf['Sequencing Analysis'] = new_sample.application_tag.name
-    lims_sample.udf['Application Tag Version'] = new_sample.application_tag.versions[0]
-    lims_sample.udf['Source'] = new_sample.source
+    latest_version = new_sample.application_tag.versions[0]
+    lims_sample.udf['Application Tag Version'] = latest_version.version
+    lims_sample.udf['Source'] = new_sample.source or 'NA'
     lims_sample.udf['familyID'] = new_family.name
     lims_sample.udf['customer'] = new_family.project.customer.customer_id
     for parent_id in ['mother', 'father']:
@@ -107,10 +108,13 @@ def add_sample_udfs(lims_sample, new_sample):
     lims_sample.udf['Process only if QC OK'] = 'NA'
 
 
-def post_sample(lims, lims_sample):
-    """Post a sample to LIMS."""
-    data = lims.tostring(ElementTree.ElementTree(lims_sample.root))
-    data = data.decode('utf-8').replace('smp:sample', 'smp:samplecreation')
-    lims_sample.root = lims.post(uri=lims.get_uri(Sample._URI), data=data)
-    lims_sample._uri = lims_sample.root.attrib['uri']
-    return lims_sample
+def save_sample(lims, instance, container, position):
+    """Create an instance of Sample from attributes then post it to the LIMS"""
+    location = ElementTree.SubElement(instance.root, 'location')
+    ElementTree.SubElement(location, 'container', dict(uri=container.uri))
+    position_element = ElementTree.SubElement(location, 'value')
+    position_element.text = position
+    data = lims.tostring(ElementTree.ElementTree(instance.root))
+    instance.root = lims.post(uri=lims.get_uri(Sample._URI), data=data)
+    instance._uri = instance.root.attrib['uri']
+    return instance

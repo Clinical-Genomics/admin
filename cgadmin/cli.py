@@ -23,9 +23,15 @@ def root(context, config, database, log_level):
     """Interact with the order portal."""
     init_log(logging.getLogger(), loglevel=log_level)
     context.obj = ruamel.yaml.safe_load(config) if config else {}
-    db_uri = (database or context.obj.get('database') or
-              os.environ['CGADMIN_SQL_DATABASE_URI'])
-    context.obj['db'] = api.connect(db_uri)
+    context.obj['database'] = (database or context.obj.get('database') or
+                               os.environ['CGADMIN_SQL_DATABASE_URI'])
+    if 'lims' not in context.obj:
+        context.obj['lims'] = {
+            'host': os.environ['CGLIMS_HOST'],
+            'username': os.environ['CGLIMS_USERNAME'],
+            'password': os.environ['CGLIMS_PASSWORD'],
+        }
+    context.obj['db'] = api.connect(context.obj['database'])
 
 
 @root.command()
@@ -73,6 +79,8 @@ def process(context, project_id):
                             context.obj['lims']['username'],
                             context.obj['lims']['password'])
     lims_project = lims.add_all(lims_api, new_project)
+    new_project.lims_id = lims_project.id
+    context.obj['db'].Project.save(new_project)
     click.echo("added new project to LIMS: {}".format(lims_project.id))
 
 

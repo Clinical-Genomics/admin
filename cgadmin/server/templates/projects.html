@@ -3,27 +3,46 @@
 
 {% block content_main %}
   {% if current_user.customers %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">Pending projects</h4>
-      </div>
-      <ul class="list-group">
-        {% for project in projects %}
-          <li class="list-group-item">
-            {% if project.is_locked %}
-              {{ project.name }} (submitted)
-            {% else %}
+    <div class="panel-group">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">Pending projects</h4>
+        </div>
+        <ul class="list-group">
+          {% for project in projects|rejectattr('is_locked') %}
+            <li class="list-group-item">
               <a href="{{ url_for('project', project_id=project.id) }}">
                 {{ project.name }}
               </a>
-            {% endif %}
-            <span class="label label-info">{{ project.user.name }}</span>
-          </li>
-        {% else %}
-          <li class="list-group-item">No projects added yet</li>
-        {% endfor %}
-      </ul>
+              <span class="label label-info">{{ project.user.name }}</span>
+            </li>
+          {% else %}
+            <li class="list-group-item">No projects</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">Submitted projects</h4>
+        </div>
+        <ul class="list-group">
+          {% for project in projects|selectattr('is_locked') %}
+            <li class="list-group-item">
+              {{ project.name }}
+              {% if project.lims_id %}
+                (LIMS: {{ project.lims_id }})
+              {% else %}
+                (submitted)
+              {% endif %}
+              <span class="label label-info">{{ project.user.name }}</span>
+            </li>
+          {% else %}
+            <li class="list-group-item">No projects</li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
+
     <form method="POST" action="{{ url_for('projects') }}">
       <div class="panel panel-default">
         <div class="panel-heading">New project</div>

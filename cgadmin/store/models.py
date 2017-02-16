@@ -87,10 +87,10 @@ class Project(Model):
     created_at = Column(types.DateTime, default=datetime.now)
     user_id = Column(ForeignKey(User.id), nullable=False)
     is_locked = Column(types.Boolean)
+    lims_id = Column(types.String(32))
 
     customer = orm.relationship(Customer, cascade='all,delete', backref='projects')
-    families = orm.relationship('Family', cascade='all,delete',
-                                backref='project')
+    families = orm.relationship('Family', cascade='all,delete', backref='project')
 
     @property
     def samples(self):
@@ -173,6 +173,11 @@ class Sample(Model):
 
     mother = orm.relationship('Sample', uselist=False, foreign_keys=[mother_id])
     father = orm.relationship('Sample', uselist=False, foreign_keys=[father_id])
+
+    @property
+    def is_external(self):
+        """Check if application tag indicates external sample."""
+        return self.application_tag.name.startswith('EXX')
 
     def __unicode__(self):
         return self.name
