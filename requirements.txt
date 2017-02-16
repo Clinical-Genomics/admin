@@ -7,3 +7,7 @@ ruamel.yaml
 cglims
 python-dateutil
 jinja2
+Flask-Admin
+Flask-Dance
+Flask-Login
+PyMySQL
