@@ -11,4 +11,4 @@ Flask-Admin
 Flask-Dance
 Flask-Login
 PyMySQL
-genologics>=0.3.11.post0
+genologics
