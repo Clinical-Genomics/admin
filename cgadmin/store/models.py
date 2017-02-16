@@ -167,6 +167,7 @@ class Sample(Model):
     container = Column(types.Enum(*constants.CONTAINERS))
     well_position = Column(types.Enum(*constants.WELL_POSITIONS))
     container_name = Column(types.String(64))
+    capture_kit = Column(types.Enum(*constants.CAPTURE_KITS))
     mother_id = Column(ForeignKey('sample.id'))
     father_id = Column(ForeignKey('sample.id'))
 

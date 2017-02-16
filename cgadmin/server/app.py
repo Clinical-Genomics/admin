@@ -278,6 +278,8 @@ def build_sample():
         if 'capture_kit' not in request.form:
             flash('You need to specify "capture kit" for external samples')
             return None
+        else:
+            sample_data['capture_kit'] = request.form['capture_kit']
 
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:

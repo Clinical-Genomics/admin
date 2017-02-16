@@ -11,3 +11,6 @@ _DEVELOP/
 *.egg-info/
 __pycache__/
 *.pyc
+
+# Secret
+alembic.ini

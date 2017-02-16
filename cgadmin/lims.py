@@ -96,9 +96,9 @@ def add_sample_udfs(lims_sample, new_sample):
     lims_sample.udf['Reads missing (M)'] = app_tag.reads
 
     # fill in additional defaults...
+    lims_sample.udf['Capture Library version'] = new_sample.capture_kit or 'NA'
     lims_sample.udf['Concentration (nM)'] = 'NA'
     lims_sample.udf['Volume (uL)'] = 'NA'
-    lims_sample.udf['Capture Library version'] = 'NA'
     lims_sample.udf['Strain'] = 'NA'
     lims_sample.udf['Index type'] = 'NA'
     lims_sample.udf['Index number'] = 'NA'
