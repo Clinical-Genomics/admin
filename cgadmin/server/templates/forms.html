@@ -95,7 +95,7 @@
       <td>
         {{ select_box('application_tag', apptags, sample.application_tag.id if sample, records=True) }}
       </td>
-      <td>{{ select_box('capture_kit', constants.CAPTURE_KITS) }}</td>
+      <td>{{ select_box('capture_kit', constants.CAPTURE_KITS, selected=(sample.capture_kit if sample)) }}</td>
       <td>
         {% if other_samples %}
           {{ select_box('father', other_samples, selected=(sample.father.id if sample), records=True) }}
