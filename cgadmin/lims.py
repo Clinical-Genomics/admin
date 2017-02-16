@@ -3,7 +3,6 @@ import logging
 from xml.etree import ElementTree
 
 from cglims.apptag import ApplicationTag
-from genologics.constants import nsmap
 from genologics.entities import (Project, Researcher, Sample, Container,
                                  Containertype)
 
@@ -66,9 +65,10 @@ def add_project(lims, new_project, researcher_id='3'):
 
 def add_sample(lims, lims_project, new_sample, lims_container):
     """Add a new project."""
-    lims_sample = create_sample(lims, new_sample.name, lims_project,
-                                lims_container,
-                                position=new_sample.well_position)
+    position = new_sample.well_position or '1:1'
+    lims_sample = Sample.create(lims, lims_container, position,
+                                name=new_sample.name, project=lims_project)
+
     add_sample_udfs(lims_sample, new_sample)
     saved_sample = post_sample(lims, lims_sample)
     return saved_sample
@@ -105,21 +105,6 @@ def add_sample_udfs(lims_sample, new_sample):
     lims_sample.udf['Sample Buffer'] = 'NA'
     lims_sample.udf['Reference Genome Microbial'] = 'NA'
     lims_sample.udf['Process only if QC OK'] = 'NA'
-
-
-def create_sample(lims, name, lims_project, lims_container, position=None):
-    """Make a new sample that you can post."""
-    lims_sample = Sample(lims=lims, _create_new=True)
-    uhmmm = "{}:{}".format(Sample._PREFIX, Sample.__name__.lower())
-    lims_sample.root = ElementTree.Element(nsmap(uhmmm))
-
-    lims_sample.name = name
-    lims_sample.project = lims_project
-    location = ElementTree.SubElement(lims_sample.root, 'location')
-    ElementTree.SubElement(location, 'container', dict(uri=lims_container.uri))
-    position_element = ElementTree.SubElement(location, 'value')
-    position_element.text = position or '1:1'
-    return lims_sample
 
 
 def post_sample(lims, lims_sample):
