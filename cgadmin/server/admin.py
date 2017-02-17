@@ -115,10 +115,13 @@ class UserManagement(object):
                     return redirect(url_for('index'))
 
                 user = this.db.User.filter_by(google_id=userinfo['id']).first()
+                if user is None:
+                    user = this.db.User.filter_by(email=email).first()
                 if user:
                     user.update(name=userinfo['name'],
                                 avatar=userinfo['picture'],
-                                email=email)
+                                email=email,
+                                google_id=userinfo['id'])
                 else:
                     user = dict(
                         google_id=userinfo['id'],
