@@ -40,7 +40,7 @@ def report(context, in_data):
                      .first())
         if version:
             versions.append(version)
-    is_accredited = all(version.apptag.is_accredited for version in versions)
+    is_accredited = all(version.is_accredited for version in versions)
     data['apptags'] = versions
     data['accredited'] = is_accredited
 

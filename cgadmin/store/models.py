@@ -149,6 +149,13 @@ class Family(Model):
     def panels(self, panel_list):
         self._panels = ','.join(panel_list) if panel_list else None
 
+    @property
+    def suggested_tag(self):
+        """Suggest an application tag based on existing samples."""
+        for sample in self.samples:
+            if sample.application_tag:
+                return sample.application_tag
+
 
 class Sample(Model):
 
