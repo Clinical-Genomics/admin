@@ -101,11 +101,16 @@
               {% for sample in samples %}
                 <tr>
                   <td>{{ sample.name }}</td>
-                  <td>{{ (sample.received_at|date).date() }}</td>
+                  <td>{{ sample.received_at.date() }}</td>
                   <td>{{ sample.library_prep_method or "N/A" }}</td>
                   <td>{{ sample.sequencing_method or "N/A" }}</td>
                   <td>{{ sample.delivery_method or "N/A" }}</td>
-                  <td>{{ (sample.delivery_date|date).date() }}</td>
+                  <td>
+                    {{ sample.delivery_date.date() }}
+                    {% if sample.processing_time %}
+                      ({{ processing_time }} days)
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

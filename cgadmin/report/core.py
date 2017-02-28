@@ -32,6 +32,15 @@ def report(context, in_data):
                                          document_version=doc_version).first()
             sample[method_type] = method
 
+        # parse dates into datetime objects
+        date_keys = set(['received_at', 'delivery_date'])
+        for date_key in date_keys:
+            if date_key in sample:
+                sample[date_key] = parser.parse(sample[date_key])
+        if all(date_key in sample for date_key in date_keys):
+            processing_time = sample['delivery_date'] - sample['received_at']
+            sample['processing_time'] = processing_time.days
+
     versions = []
     for apptag_id, apptag_version in apptag_ids:
         version = (db.ApplicationTagVersion.join(ApplicationTagVersion.apptag)
@@ -49,7 +58,6 @@ def report(context, in_data):
         autoescape=select_autoescape(['html', 'xml'])
     )
 
-    env.filters['date'] = parser.parse
     template = env.get_template('report.html')
     template_out = template.render(**data)
 
