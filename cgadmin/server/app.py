@@ -222,6 +222,7 @@ with app.app_context():
     admin.add_view(ProtectedModelView(models.ApplicationTag, db.session))
     admin.add_view(ProtectedModelView(models.ApplicationTagVersion, db.session))
     admin.add_view(ProtectedModelView(models.Invoice, db.session))
+    admin.add_view(ProtectedModelView(models.Method, db.session))
 
 
 def build_project():
