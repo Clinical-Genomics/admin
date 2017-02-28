@@ -264,6 +264,7 @@ class Method(Model):
     description = Column(types.Text, nullable=False)
     limitations = Column(types.Text)
 
+    @property
     def full_name(self):
         """Return the full name with number and version."""
         return "{this.document}:{this.document_version} {this.name}".format(this=self)
