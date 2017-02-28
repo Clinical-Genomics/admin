@@ -102,10 +102,10 @@
                 <tr>
                   <td>{{ sample.name }}</td>
                   <td>{{ (sample.received_at|date).date() }}</td>
-                  <td>{{ sample.library_prep_method.full_name if sample.library_prep_method else "N/A" }}</td>
+                  <td>{{ sample.library_prep_method or "N/A" }}</td>
                   <td>{{ sample.sequencing_method or "N/A" }}</td>
-                  <td></td>
-                  <td>{{ (analysis_date|date).date() }}</td>
+                  <td>{{ sample.delivery_method or "N/A" }}</td>
+                  <td>{{ (sample.delivery_date|date).date() }}</td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -166,7 +166,7 @@
               Teknisk beskrivning av analysen: {{ apptagv.apptag.name }}
             </h4>
             <p class="card-text">{{ apptagv.description }}</p>
-            <p class="card-text">{{ apptagv.limitations }}</p>
+            <p class="card-text">{{ apptagv.limitations if apptagv.limitations }}</p>
           </div>
         {% endfor %}
 

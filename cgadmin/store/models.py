@@ -269,6 +269,12 @@ class Method(Model):
         """Return the full name with number and version."""
         return "{this.document}:{this.document_version} {this.name}".format(this=self)
 
+    def __unicode__(self):
+        return self.full_name
+
+    def __str__(self):
+        return self.full_name
+
 
 class Invoice(Model):
 

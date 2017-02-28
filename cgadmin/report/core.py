@@ -22,7 +22,7 @@ def report(context, in_data):
     apptag_ids = set()
     for sample in data['samples']:
         apptag_ids.add((sample['app_tag'], sample['app_tag_version']))
-        method_types = ['library_prep_method', 'sequencing_method']
+        method_types = ['library_prep_method', 'sequencing_method', 'delivery_method']
         for method_type in method_types:
             document_raw = sample.get(method_type)
             if document_raw is None:
