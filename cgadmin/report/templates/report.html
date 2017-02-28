@@ -1,4 +1,4 @@
-{% from "bootstrap.html" import css %}
+{% from "bootstrap.html" import css, custom_css %}
 
 <html lang="en">
   <head>
@@ -8,6 +8,7 @@
     <title>Clinical Genomics Report - {{ family_id }}</title>
 
     {{ css() }}
+    {{ custom_css() }}
   </head>
 
   <body>
@@ -110,7 +111,7 @@
                   <td>
                     {{ sample.delivery_date.date() if sample.delivery_date }}
                     {% if sample.processing_time %}
-                      ({{ processing_time }} days)
+                      ({{ sample.processing_time }} days)
                     {% endif %}
                   </td>
                 </tr>
