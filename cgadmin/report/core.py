@@ -31,6 +31,7 @@ def report(context, in_data):
             method = db.Method.filter_by(document=doc_no,
                                          document_version=doc_version).first()
             sample[method_type] = method
+            sample['project'] = sample['project'].split()[0]
 
         # parse dates into datetime objects
         date_keys = set(['received_at', 'delivery_date'])

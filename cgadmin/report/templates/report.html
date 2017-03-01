@@ -52,8 +52,8 @@
         </div>
 
         <div class="card-block">
-          <h4 class="card-title">Beställningsinformation</h4>
           <table class="table table-bordered">
+            <caption>Beställningsinformation</caption>
             <thead>
               <tr>
                 <th>Prov</th>
@@ -71,7 +71,6 @@
                 <tr>
                   <td>{{ sample.name }} ({{ sample.id }})</td>
                   <td>{{ family_id }}</td>
-                  <td>{{ sample.status }}</td>
                   <td>
                     {{ sample.sex }}
                     ( analys:
@@ -81,6 +80,7 @@
                         <span class="text-success">{{ sample.sex_predicted }}</span>
                       {% endif %})
                   </td>
+                  <td>{{ sample.status }}</td>
                   <td>{{ gene_panels|join(', ') }}</td>
                   <td>{{ sample.source }}</td>
                   <td>{{ sample.project }}</td>
@@ -92,8 +92,8 @@
         </div>
 
         <div class="card-block">
-          <h4 class="card-title">Metoder</h4>
           <table class="table table-bordered">
+            <caption>Metoder</caption>
             <thead>
               <tr>
                 <th>Prov</th>
@@ -101,7 +101,7 @@
                 <th>Biblioteksberedning</th>
                 <th>Sekvensering</th>
                 <th>Analys</th>
-                <th>Leveransdatum</th>
+                <th>Svarsdatum</th>
               </tr>
             </thead>
             <tbody>
@@ -115,7 +115,7 @@
                   <td>
                     {{ sample.delivery_date.date() if sample.delivery_date }}
                     {% if sample.processing_time %}
-                      ({{ sample.processing_time }} days)
+                      ({{ sample.processing_time }} dagar)
                     {% endif %}
                   </td>
                 </tr>
@@ -125,8 +125,8 @@
         </div>
 
         <div class="card-block">
-          <h4 class="card-title">Analysinformation</h4>
           <table class="table table-bordered">
+            <caption>Analysinformation</caption>
             <thead>
               <th>Familj</th>
               <th>MIP-version</th>
@@ -145,8 +145,8 @@
         </div>
 
         <div class="card-block">
-          <h4>Analysresultat</h4>
           <table class="table table-bordered">
+            <caption>Analysresultat</caption>
             <thead>
               <tr>
                 <th>Prov</th>
