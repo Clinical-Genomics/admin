@@ -32,8 +32,7 @@ def report(context, in_data):
             if document_raw is None:
                 continue
             doc_no, doc_version = [int(part) for part in document_raw.split(':')]
-            method = db.Method.filter_by(document=doc_no,
-                                         document_version=doc_version).first()
+            method = db.Method.filter_by(document=doc_no).first()
             if method is None:
                 log.warn("method not found in admin db: %s", document_raw)
             sample[method_type] = method
