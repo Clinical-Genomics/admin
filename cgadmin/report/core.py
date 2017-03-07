@@ -37,7 +37,7 @@ def report(context, in_data):
                 log.warn("method not found in admin db: %s", document_raw)
             elif method.version != doc_version:
                 log.warn("method version not the same as in database")
-                method.version = doc_version
+                method.document_version = doc_version
             sample[method_type] = method
             sample['project'] = sample['project'].split()[0]
 
