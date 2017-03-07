@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from datetime import datetime
 import json
 
@@ -7,6 +9,8 @@ import click
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from cgadmin.store.models import ApplicationTag, ApplicationTagVersion
+
+log = logging.getLogger(__name__)
 
 
 @click.command()
@@ -30,6 +34,8 @@ def report(context, in_data):
             doc_no, doc_version = [int(part) for part in document_raw.split(':')]
             method = db.Method.filter_by(document=doc_no,
                                          document_version=doc_version).first()
+            if method is None:
+                log.warn("method not found in admin db: %s", document_raw)
             sample[method_type] = method
             sample['project'] = sample['project'].split()[0]
 
