@@ -16,22 +16,63 @@ log = logging.getLogger(__name__)
 def new_lims_project(admin_db, lims_api, project_data):
     """Create a new project with samples in LIMS."""
     validate(project_data, schema_project)
+    prepare_data(admin_db, project_data)
+    for family_data in project_data['families']:
+        check_family(lims_api, family_data)
+        for sample_data in family_data['samples']:
+            log.debug("checking sample: %s", sample_data['name'])
+            check_sample(lims_api, sample_data)
 
     lims_project = make_project(lims_api, project_data, researcher_id='3')
     log.info("added new LIMS project: %s", lims_project.id)
 
-    prepare_data(admin_db, project_data)
     container_groups = group_containers(project_data)
-
     for container_name, samples in container_groups.items():
         lims_container = make_container(lims_api, container_name)
         for sample_data in samples:
-            log.debug("adding new sample: %s", sample_data['name'])
             lims_sample = make_sample(lims_api, sample_data, lims_project,
                                       lims_container)
             log.info("added new LIMS sample: %s", lims_sample.id)
 
     return lims_project
+
+
+def check_sample(lims_api, sample_data):
+    """Check sample data before inserting into LIMS."""
+    lims_samples = lims_api.get_samples(name=sample_data['name'],
+                                        udf={'customer': sample_data['customer']})
+    # TODO: could add check if other samples are canceled...
+    if len(lims_samples) > 0:
+        raise ValueError("duplicate sample name: %s", sample_data['name'])
+
+    family_id = sample_data['family']['name']
+    lims_samples = lims_api.get_samples(udf={'customer': sample_data['customer'],
+                                             'familyID': family_id})
+    if len(lims_samples) > 0:
+        raise ValueError("duplicate family name: {}".format(family_id))
+
+    if sample_data['is_external'] and sample_data['apptag'].is_panel:
+        if sample_data.get('capture_kit') is None:
+            raise ValueError("external exome samples require a capture kit!")
+
+
+def check_family(lims_api, family_data):
+    """Check family data, mostly relationships."""
+    if len(family_data['samples']) > 1:
+        relations = [sample_data for sample_data in family_data['samples']
+                     if (sample_data.get('mother') or sample_data.get('father'))]
+        if len(relations) == 0:
+            family_id = family_data['name']
+            raise ValueError("samples in family not related: {}".format(family_id))
+
+        sample_map = {sample_data['name'] for sample_data in family_data['samples']}
+        for sample_data in relations:
+            for parent_key in ('mother', 'father'):
+                parent_id = sample_data[parent_key]
+                if parent_id and parent_id not in sample_map:
+                    sample_name = sample_data['name']
+                    raise ValueError("sample relation error: {}, {} -> {}"
+                                     .format(sample_name, parent_key, parent_id))
 
 
 def prepare_data(admin_db, project_data):
@@ -43,6 +84,7 @@ def prepare_data(admin_db, project_data):
             if apptag_obj is None:
                 raise ValueError("unknown application tag: {}".format(apptag_name))
             sample_data['is_external'] = apptag_obj.is_external
+            sample_data['apptag'] = ApplicationTag(apptag_name)
             sample_data['application_tag_version'] = apptag_obj.versions[0].version
             sample_data['family'] = family_data
             sample_data['customer'] = project_data['customer']
@@ -123,9 +165,7 @@ def add_sample_udfs(lims_sample, sample_data):
         if parent_sample:
             lims_sample.udf["{}ID".format(parent_id)] = parent_sample
 
-    app_tag = ApplicationTag(sample_data['application_tag'])
-    lims_sample.udf['Reads missing (M)'] = app_tag.reads
-
+    lims_sample.udf['Reads missing (M)'] = sample_data['apptag'].reads
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
     require_qcok = 'yes' if family_data['require_qcok'] else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
