@@ -12,3 +12,6 @@ Flask-Dance
 Flask-Login
 PyMySQL
 genologics
+xlrd
+jsonschema
+coloredlogs

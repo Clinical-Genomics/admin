@@ -81,7 +81,8 @@ def upload(context, project_id):
     lims_api = ClinicalLims(context.obj['lims']['host'],
                             context.obj['lims']['username'],
                             context.obj['lims']['password'])
-    lims_project = lims.add_all(lims_api, new_project)
+    project_data = api.parse_db_project(new_project)
+    lims_project = lims.new_lims_project(context.obj['db'], lims_api, project_data)
     new_project.lims_id = lims_project.id
     context.obj['db'].Project.save(new_project)
     click.echo("added new project to LIMS: {}".format(lims_project.id))

@@ -107,6 +107,9 @@
         {% endif %}
       </td>
       <td>{{ select_box('source', constants.SOURCES, sample.source if sample) }}</td>
+      <td>
+        <input class="form-control" name="quantity" value="{{ sample.quantity if (sample and sample.quantity) }}" type="number" placeholder="Quantity">
+      </td>
       <td>{{ select_box('container', constants.CONTAINERS, sample.container if sample) }}</td>
       <td>
         <input class="form-control" name="container_name" value="{{ sample.container_name if (sample and sample.container_name) }}" pattern="[a-zA-Z0-9-]+" placeholder="Container name">

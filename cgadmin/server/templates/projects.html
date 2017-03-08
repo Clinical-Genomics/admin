@@ -54,6 +54,27 @@
         </div>
       </div>
     </form>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Upload order form</div>
+      <div class="panel-body">
+        <form action="{{ url_for('orderforms') }}" method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <input name="name" class="form-control" required placeholder="Project name">
+          </div>
+          <div class="row">
+            <div class="col-xs-8">
+              <input name="orderform" type="file" class="form-control" required>
+            </div>
+            <div class="col-xs-4">
+              <button class="btn btn-default form-control" type="submit">
+                Submit
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   {% else %}
     <h4>Which customer do you belong to?</h4>
     <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">

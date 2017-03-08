@@ -5,99 +5,133 @@ from xml.etree import ElementTree
 from cglims.apptag import ApplicationTag
 from genologics.entities import (Project, Researcher, Sample, Container,
                                  Containertype)
+from jsonschema import validate
+from cgadmin.schema import schema_project
 
 SEX_MAP = {'male': 'M', 'female': 'F', 'unknown': 'unknown'}
 CON_TYPES = {'Tube': 2, '96 well plate': 1}
 log = logging.getLogger(__name__)
 
 
-def add_all(lims, new_project):
-    """Join all the functions."""
-    lims_project = add_project(lims, new_project)
+def new_lims_project(admin_db, lims_api, project_data):
+    """Create a new project with samples in LIMS."""
+    validate(project_data, schema_project)
+
+    lims_project = make_project(lims_api, project_data, researcher_id='3')
     log.info("added new LIMS project: %s", lims_project.id)
 
-    # group samples based on container
-    container_groups = {}
-    for new_family in new_project.families:
-        for new_sample in new_family.samples:
-            if new_sample.is_external or new_sample.container == 'Tube':
-                container_name = new_sample.container_name or new_sample.name
-                container_name_full = "tube_{}".format(container_name)
-                container_groups[container_name_full] = [new_sample]
-            elif new_sample.container == '96 well plate':
-                if new_sample.container_name not in container_groups:
-                    container_groups[new_sample.container_name] = []
-                container_groups[new_sample.container_name].append(new_sample)
-            else:
-                raise ValueError("unsupported container: {}"
-                                 .format(new_sample.container))
+    prepare_data(admin_db, project_data)
+    container_groups = group_containers(project_data)
 
-    for container_name, new_samples in container_groups.items():
-        if container_name.startswith('tube_'):
-            container_type = Containertype(lims=lims, id='2')
-            container_name = container_name.replace('tube_', '')
-        else:
-            container_type = Containertype(lims=lims, id='1')
-        lims_container = Container.create(lims=lims, name=container_name,
-                                          type=container_type)
-        log.info("added new LIMS container: %s", lims_container.id)
-
-        log.debug("adding new sample: %s", new_sample.name)
-        lims_sample = add_sample(lims, lims_project, new_sample, lims_container)
-        log.info("added new LIMS sample: %s", lims_sample.id)
+    for container_name, samples in container_groups.items():
+        lims_container = make_container(lims_api, container_name)
+        for sample_data in samples:
+            log.debug("adding new sample: %s", sample_data['name'])
+            lims_sample = make_sample(lims_api, sample_data, lims_project,
+                                      lims_container)
+            log.info("added new LIMS sample: %s", lims_sample.id)
 
     return lims_project
 
 
-def add_project(lims, new_project, researcher_id='3'):
+def prepare_data(admin_db, project_data):
+    """Prepare the data before processing it."""
+    for family_data in project_data['families']:
+        for sample_data in family_data['samples']:
+            apptag_name = sample_data['application_tag']
+            apptag_obj = admin_db.ApplicationTag.filter_by(name=apptag_name).first()
+            if apptag_obj is None:
+                raise ValueError("unknown application tag: {}".format(apptag_name))
+            sample_data['is_external'] = apptag_obj.is_external
+            sample_data['application_tag_version'] = apptag_obj.versions[0].version
+            sample_data['family'] = family_data
+            sample_data['customer'] = project_data['customer']
+
+
+def group_containers(project_data):
+    """Group samples based on container."""
+    container_groups = {}
+    for family_data in project_data['families']:
+        for sample_data in family_data['samples']:
+            if sample_data['is_external'] or sample_data['container'] == 'Tube':
+                container_name = sample_data['container_name'] or sample_data['name']
+                container_name_full = "tube_{}".format(container_name)
+                container_groups[container_name_full] = [sample_data]
+            elif sample_data['container'] == '96 well plate':
+                if sample_data['container_name'] not in container_groups:
+                    container_groups[sample_data['container_name']] = []
+                container_groups[sample_data['container_name']].append(sample_data)
+            else:
+                raise ValueError("unsupported container: {}"
+                                 .format(sample_data['container']))
+    return container_groups
+
+
+def make_project(lims_api, project_data, researcher_id='3'):
     """Create a new project with samples."""
-    researcher = Researcher(lims, id=researcher_id)
+    researcher = Researcher(lims_api, id=researcher_id)
     log.info("using researcher: %s", researcher.name)
 
     # create a new LIMS project
-    new_limsproject = Project.create(lims, researcher=researcher,
-                                     name=new_project.name)
+    new_limsproject = Project.create(lims_api, researcher=researcher,
+                                     name=project_data['name'])
     # add UDFs
     customer_udf = 'Customer project reference'
-    new_limsproject.udf[customer_udf] = new_project.customer.customer_id
+    new_limsproject.udf[customer_udf] = project_data['customer']
     new_limsproject.put()
     return new_limsproject
 
 
-def add_sample(lims, lims_project, new_sample, lims_container):
-    """Add a new sample to the project."""
-    lims_sample = Sample._create(lims, creation_tag='samplecreation',
-                                 name=new_sample.name, project=lims_project)
-    add_sample_udfs(new_sample, lims_sample)
-    position = new_sample.well_position or '1:1'
-    lims_sample = save_sample(lims, lims_sample, lims_container, position)
+def make_container(lims_api, container_name):
+    """Create a new container in LIMS."""
+    if container_name.startswith('tube_'):
+            container_type = Containertype(lims=lims_api, id='2')
+            container_name = container_name.replace('tube_', '')
+    else:
+        container_type = Containertype(lims=lims_api, id='1')
+    lims_container = Container.create(lims=lims_api, name=container_name,
+                                      type=container_type)
+    log.info("added new LIMS container: %s", lims_container.id)
+    return lims_container
+
+
+def make_sample(lims_api, sample_data, lims_project, lims_container):
+    """Create a new sample in LIMS."""
+    lims_sample = Sample._create(lims_api, creation_tag='samplecreation',
+                                 name=sample_data['name'], project=lims_project)
+    add_sample_udfs(lims_sample, sample_data)
+    position = sample_data['well_position'] or '1:1'
+    lims_sample = save_sample(lims_api, lims_sample, lims_container, position)
     return lims_sample
 
 
-def add_sample_udfs(new_sample, lims_sample):
+def add_sample_udfs(lims_sample, sample_data):
     """Determine sample UDFs."""
-    new_family = new_sample.family
-    lims_sample.udf['priority'] = new_family.priority
-    lims_sample.udf['Data Analysis'] = new_family.delivery_type
-    lims_sample.udf['Gene List'] = ';'.join(new_family.panels)
-    lims_sample.udf['Gender'] = SEX_MAP.get(new_sample.sex)
-    lims_sample.udf['Status'] = new_sample.status
-    lims_sample.udf['Sequencing Analysis'] = new_sample.application_tag.name
-    latest_version = new_sample.application_tag.versions[0]
-    lims_sample.udf['Application Tag Version'] = latest_version.version
-    lims_sample.udf['Source'] = new_sample.source or 'NA'
-    lims_sample.udf['familyID'] = new_family.name
-    lims_sample.udf['customer'] = new_family.project.customer.customer_id
+    family_data = sample_data['family']
+    lims_sample.udf['priority'] = family_data['priority']
+    lims_sample.udf['Data Analysis'] = family_data['delivery_type']
+    lims_sample.udf['Gene List'] = ';'.join(family_data['panels'])
+    lims_sample.udf['Gender'] = SEX_MAP.get(sample_data['sex'])
+    lims_sample.udf['Status'] = sample_data['status']
+    lims_sample.udf['Sequencing Analysis'] = sample_data['application_tag']
+    lims_sample.udf['Application Tag Version'] = sample_data['application_tag_version']
+    lims_sample.udf['Source'] = sample_data['source'] or 'NA'
+    lims_sample.udf['familyID'] = family_data['name']
+    lims_sample.udf['customer'] = sample_data['customer']
     for parent_id in ['mother', 'father']:
-        parent_sample = getattr(new_sample, parent_id)
+        parent_sample = sample_data.get(parent_id)
         if parent_sample:
-            lims_sample.udf["{}ID".format(parent_id)] = parent_sample.name
+            lims_sample.udf["{}ID".format(parent_id)] = parent_sample
 
-    app_tag = ApplicationTag(new_sample.application_tag)
+    app_tag = ApplicationTag(sample_data['application_tag'])
     lims_sample.udf['Reads missing (M)'] = app_tag.reads
 
+    lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
+    require_qcok = 'yes' if family_data['require_qcok'] else 'no'
+    lims_sample.udf['Process only if QC OK'] = require_qcok
+    lims_sample.udf['Quantity'] = sample_data['quantity']
+
     # fill in additional defaults...
-    lims_sample.udf['Capture Library version'] = new_sample.capture_kit or 'NA'
     lims_sample.udf['Concentration (nM)'] = 'NA'
     lims_sample.udf['Volume (uL)'] = 'NA'
     lims_sample.udf['Strain'] = 'NA'
@@ -105,16 +139,15 @@ def add_sample_udfs(new_sample, lims_sample):
     lims_sample.udf['Index number'] = 'NA'
     lims_sample.udf['Sample Buffer'] = 'NA'
     lims_sample.udf['Reference Genome Microbial'] = 'NA'
-    lims_sample.udf['Process only if QC OK'] = 'NA'
 
 
-def save_sample(lims, instance, container, position):
+def save_sample(lims_api, instance, container, position):
     """Create an instance of Sample from attributes then post it to the LIMS"""
     location = ElementTree.SubElement(instance.root, 'location')
     ElementTree.SubElement(location, 'container', dict(uri=container.uri))
     position_element = ElementTree.SubElement(location, 'value')
     position_element.text = position
-    data = lims.tostring(ElementTree.ElementTree(instance.root))
-    instance.root = lims.post(uri=lims.get_uri(Sample._URI), data=data)
+    data = lims_api.tostring(ElementTree.ElementTree(instance.root))
+    instance.root = lims_api.post(uri=lims_api.get_uri(Sample._URI), data=data)
     instance._uri = instance.root.attrib['uri']
     return instance

@@ -1,21 +1,28 @@
 # -*- coding: utf-8 -*-
 import os
+import tempfile
 
 from cglims.api import ClinicalLims
+import coloredlogs
 from flask import (abort, Flask, render_template, request, redirect, url_for,
-                   flash)
+                   flash, jsonify)
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_bootstrap import Bootstrap
 from flask_login import current_user, login_required
+from jsonschema import ValidationError
+from werkzeug.utils import secure_filename
 
-from cgadmin.store import models
 from cgadmin import constants
+from cgadmin.store import models
+from cgadmin.lims import new_lims_project
+from cgadmin.orderform import parse_orderform
 from .admin import UserManagement
 from .flask_sqlservice import FlaskSQLService
 from .publicbp import blueprint as public_bp
 
 
+coloredlogs.install(level='INFO')
 app = Flask(__name__)
 SECRET_KEY = 'unsafe!!!'
 BOOTSTRAP_SERVE_LOCAL = 'FLASK_DEBUG' in os.environ
@@ -35,7 +42,7 @@ app.config.from_object(__name__)
 db = FlaskSQLService(model_class=models.Model)
 user = UserManagement(db)
 admin = Admin(name='Clinical Admin', template_mode='bootstrap3')
-lims = ClinicalLims(CGLIMS_HOST, CGLIMS_USERNAME, CGLIMS_PASSWORD)
+lims_api = ClinicalLims(CGLIMS_HOST, CGLIMS_USERNAME, CGLIMS_PASSWORD)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -96,6 +103,7 @@ def projects(project_id=None):
 
 
 @app.route('/projects/<int:project_id>/submit', methods=['POST'])
+@login_required
 def submit_project(project_id):
     """Submit and lock a project."""
     project_obj = db.Project.get(project_id)
@@ -192,6 +200,38 @@ def samples(family_id=None, sample_id=None):
     return redirect(url_for('family', family_id=family_obj.id))
 
 
+@app.route('/api/v1/projects', methods=['POST'])
+def api_projects():
+    """Submit new projects to LIMS."""
+    project_data = request.get_json()
+    try:
+        lims_project = new_lims_project(db, lims_api, project_data)
+    except ValidationError as error:
+        flash(error.message, 'error')
+        return abort(406)
+    return jsonify(success=True, project_id=lims_project.id)
+
+
+@app.route('/orderforms', methods=['POST'])
+def orderforms():
+    """Upload order form in Excel format to submit new project."""
+    excel_file = request.files['orderform']
+    project_name = request.form['name']
+    filename = secure_filename(excel_file.filename)
+    temp_dir = tempfile.gettempdir()
+    saved_path = os.path.join(temp_dir, filename)
+    excel_file.save(saved_path)
+    project_data = parse_orderform(saved_path)
+    project_data['name'] = project_name
+    try:
+        lims_project = new_lims_project(db, lims_api, project_data)
+    except ValidationError as error:
+        flash(error.message, 'error')
+        return abort(406)
+    flash("submitted new project: {}!".format(lims_project.id), 'success')
+    return redirect(url_for('index'))
+
+
 # register blueprints
 app.register_blueprint(public_bp)
 
@@ -270,6 +310,7 @@ def build_sample():
             return None
 
         sample_data['source'] = request.form['source']
+        sample_data['quantity'] = request.form['quantity']
         sample_data['container'] = request.form['container']
         if sample_data['container'] == '96 well plate':
             sample_data['container_name'] = request.form['container_name']
@@ -308,8 +349,8 @@ def check_triotag(family_obj):
 
 def check_familyname(customer_id, family_name):
     """Check existing families in LIMS."""
-    lims_samples = lims.get_samples(udf={'customer': customer_id,
-                                         'familyID': family_name})
+    lims_samples = lims_api.get_samples(udf={'customer': customer_id,
+                                        'familyID': family_name})
     if len(lims_samples) > 0:
         flash("family name already exists: {}".format(family_name), 'danger')
         raise ValueError(family_name)
@@ -317,8 +358,8 @@ def check_familyname(customer_id, family_name):
 
 def check_samplename(customer_id, sample_name):
     """Check existing families in LIMS."""
-    lims_samples = lims.get_samples(name=sample_name,
-                                    udf={'customer': customer_id})
+    lims_samples = lims_api.get_samples(name=sample_name,
+                                        udf={'customer': customer_id})
     if len(lims_samples) > 0:
         flash("sample name already exists: {}".format(sample_name), 'danger')
         return redirect(request.referrer)

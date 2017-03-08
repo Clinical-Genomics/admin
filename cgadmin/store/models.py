@@ -174,16 +174,12 @@ class Sample(Model):
     well_position = Column(types.Enum(*constants.WELL_POSITIONS))
     container_name = Column(types.String(64))
     capture_kit = Column(types.Enum(*constants.CAPTURE_KITS))
+    quantity = Column(types.Integer)
     mother_id = Column(ForeignKey('sample.id'))
     father_id = Column(ForeignKey('sample.id'))
 
     mother = orm.relationship('Sample', uselist=False, foreign_keys=[mother_id])
     father = orm.relationship('Sample', uselist=False, foreign_keys=[father_id])
-
-    @property
-    def is_external(self):
-        """Check if application tag indicates external sample."""
-        return self.application_tag.name.startswith('EXX')
 
     def __unicode__(self):
         return self.name
@@ -216,6 +212,11 @@ class ApplicationTag(Model):
     @property
     def latest(self):
         return self.versions[0] if self.versions else None
+
+    @property
+    def is_external(self):
+        """Check if application tag indicates external sample."""
+        return self.name.startswith('EXX')
 
     def __unicode__(self):
         return self.name
