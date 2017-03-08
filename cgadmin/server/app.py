@@ -226,8 +226,8 @@ def orderforms():
     try:
         lims_project = new_lims_project(db, lims_api, project_data)
     except ValidationError as error:
-        flash(error.message, 'error')
-        return abort(406)
+        flash(error.message, 'danger')
+        return redirect(request.referrer)
     flash("submitted new project: {}!".format(lims_project.id), 'success')
     return redirect(url_for('index'))
 

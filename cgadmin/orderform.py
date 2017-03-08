@@ -52,18 +52,22 @@ def expand_family(family_id, parsed_family):
 
     gene_panels = set()
     for raw_sample in samples:
-        gene_panels.update(raw_sample['panels'])
+        if raw_sample['panels']:
+            gene_panels.update(raw_sample['panels'])
         new_sample = {
             'name': raw_sample['name'],
             'container': raw_sample['container'],
             'container_name': raw_sample['container_name'],
-            'well_position': raw_sample['well_position'],
             'sex': raw_sample['sex'],
             'quantity': raw_sample['quantity'],
             'application_tag': raw_sample['application_tag'],
             'source': raw_sample['source'],
             'status': raw_sample['status'],
         }
+        for key in ('container', 'container_name', 'well_position'):
+            if raw_sample[key]:
+                new_sample[key] = raw_sample[key]
+
         for parent_id in ('mother', 'father'):
             if raw_sample[parent_id]:
                 new_sample[parent_id] = raw_sample[parent_id]
@@ -129,8 +133,10 @@ def relevant_rows(orderform_sheet):
             current_row = None
         elif current_row == 'samples':
             values = [cell.value for cell in row]
-            sample_dict = dict(zip(header_row, values))
-            raw_samples.append(sample_dict)
+            if values[0]:
+                # skip empty rows
+                sample_dict = dict(zip(header_row, values))
+                raw_samples.append(sample_dict)
 
         if row[0].value == '<TABLE HEADER>':
             current_row = 'header'

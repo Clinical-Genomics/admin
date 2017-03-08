@@ -44,7 +44,7 @@ schema_sample = {
             "type": "number"
         }
     },
-    "required": ["name", "sex", "status", "application_tag"]
+    "required": ["name", "sex", "application_tag"]
 }
 
 schema_family = {
