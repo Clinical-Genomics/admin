@@ -1,5 +1,7 @@
 # Order portal @Clinical-Genomics
 
+Here is a definition of the [JSON schema](https://gist.github.com/robinandeer/8c67f0b6c5f5447ee21e0e258e4e407e) for submitting samples through the API.
+
 ## Proposed work flow
 
 1. Open a new project/ticket

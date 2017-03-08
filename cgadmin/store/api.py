@@ -2,6 +2,7 @@
 from sqlservice import SQLClient
 
 from .models import Model, ApplicationTagVersion, ApplicationTag
+from cgadmin.schema import schema_project
 
 
 def connect(db_uri):
@@ -62,3 +63,14 @@ def parse_db_project(new_project):
         project_data['families'].append(family_data)
 
     return project_data
+
+
+def full_schema(admin_db):
+    """Fill out schema with all possible values."""
+    schema_project['properties']['customer'] = {
+        "enum": [customer.customer_id for customer in admin_db.Customer]
+    }
+    schema_project['properties']['families']['items']['properties']['samples']['items']['properties']['application_tag'] = {
+        "enum": [apptag.name for apptag in admin_db.ApplicationTag]
+    }
+    return schema_project

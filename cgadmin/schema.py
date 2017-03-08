@@ -58,7 +58,7 @@ schema_family = {
         "panels": {
             "type": "array",
             "items": {
-                "type": "string",
+                "enum": constants.PANELS,
             },
             "minItems": 1,
             "uniqueItems": True
