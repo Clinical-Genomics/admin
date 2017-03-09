@@ -13,7 +13,7 @@
               <option value="{{ project.customer.id }}" selected>{{ project.customer.name }}</option>
             {% else %}
               {% for customer in user.customers %}
-                <option value="{{ customer.id }}" selected>{{ customer.name }}</option>
+                <option value="{{ customer.id }}" selected>{{ customer.name }} ({{ customer.customer_id }})</option>
               {% endfor %}
             {% endif %}
           </select>
@@ -110,7 +110,7 @@
 {% endmacro %}
 
 {% macro sample_row_form(constants, apptags, sample=None, family_id=None,
-                         other_samples=None) %}
+                         other_samples=None, old_form=None) %}
   {% if sample %}
     <form action="{{ url_for('samples', sample_id=sample.id) }}" method="POST">
   {% else %}
@@ -118,9 +118,9 @@
   {% endif %}
     <tr>
       <td>
-        <input class="form-control" name="name" value="{{ sample.name if sample }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
+        <input class="form-control" name="name" value="{{ sample.name if sample else old_form.name }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
       </td>
-      <td>{{ select_box('sex', constants.SEXES, sample.sex if sample) }}</td>
+      <td>{{ select_box('sex', constants.SEXES, sample.sex if sample else old_form.sex) }}</td>
       <td>{{ select_box('status', constants.STATUSES, sample.status if sample) }}</td>
       <td>
         {{ select_box('application_tag', apptags, sample.application_tag.id if sample, records=True) }}

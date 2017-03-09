@@ -58,8 +58,7 @@ def index():
     else:
         customer_q = db.Customer.find()
         proj_q = None
-    return render_template('projects.html', constants=constants,
-                           projects=proj_q, customers=customer_q)
+    return render_template('projects.html', projects=proj_q, customers=customer_q)
 
 
 @app.route('/users/<int:user_id>/link', methods=['POST'])
@@ -82,8 +81,8 @@ def project(project_id):
     """View a project."""
     project_obj = db.Project.get(project_id)
     apptags = db.ApplicationTag.order_by('category')
-    return render_template('project.html', project=project_obj,
-                           constants=constants, apptags=apptags)
+    return render_template('project.html', project=project_obj, apptags=apptags,
+                           form=request.form)
 
 
 @app.route('/projects', methods=['POST'])
@@ -140,7 +139,7 @@ def families(project_id):
 @app.route('/families/<int:family_id>', methods=['POST'])
 @login_required
 def family(family_id):
-    """Show a family."""
+    """Update a family."""
     family_obj = db.Family.get(family_id)
     family_data = build_family()
     if family_data['name'] != family_obj.name:
@@ -152,10 +151,7 @@ def family(family_id):
     family_obj.update(family_data)
     db.Family.save(family_obj)
     flash("{} updated".format(family_obj.name), 'info')
-
-    apptags = db.ApplicationTag.order_by('category')
-    return render_template('family.html', family=family_obj,
-                           constants=constants, apptags=apptags)
+    return redirect(url_for('project', project_id=family_obj.project.id))
 
 
 @app.route('/families/<int:family_id>/delete', methods=['POST'])
@@ -170,13 +166,15 @@ def delete_family(family_id):
     return redirect(url_for('project', project_id=project_id))
 
 
-@app.route('/families/<int:family_id>/samples', methods=['POST'])
+@app.route('/families/<int:family_id>/samples', methods=['POST', 'GET'])
 @app.route('/samples/<int:sample_id>', methods=['POST'])
 @login_required
 def samples(family_id=None, sample_id=None):
     """Add or update a sample to an existing family."""
     if family_id:
         family_obj = db.Family.get(family_id)
+        if family_obj and request.method == 'GET':
+            return redirect(url_for('project', project_id=family_obj.project.id))
     elif sample_id:
         sample_obj = db.Sample.get(sample_id)
         family_obj = sample_obj.family
@@ -197,7 +195,11 @@ def samples(family_id=None, sample_id=None):
 
         check_triotag(family_obj)
         flash("{} updated".format(sample_obj.name), 'info')
-    return redirect(url_for('family', family_id=family_obj.id))
+        return redirect(url_for('project', project_id=family_obj.project.id))
+    else:
+        apptags = db.ApplicationTag.order_by('category')
+        return render_template('project.html', project=family_obj.project,
+                               apptags=apptags, form=request.form)
 
 
 @app.route('/api/v1/projects', methods=['POST'])
@@ -236,7 +238,7 @@ user.init_app(app)
 Bootstrap(app)
 admin.init_app(app)
 
-app.jinja_env.globals.update(db=db)
+app.jinja_env.globals.update(db=db, constants=constants)
 
 
 def submit_lims_project(project_data):
@@ -308,6 +310,12 @@ def build_family():
 
 
 def build_sample():
+    required_fields = ['name', 'sex', 'application_tag']
+    for field in required_fields:
+        if not request.form.get(field):
+            flash("missing required information: {}".format(field), 'danger')
+            return None
+
     sample_data = dict(
         name=request.form['name'],
         sex=request.form['sex'],
@@ -320,27 +328,29 @@ def build_sample():
 
     if not cg_apptag.is_external:
         # if the sample isn't externally sequenced
-        if 'container' not in request.form:
-            flash('You need to specify a container!', 'warning')
+        if not request.form.get('container'):
+            flash('you need to specify "container"', 'warning')
             return None
-        if 'source' not in request.form:
-            flash('You need to specify "source"', 'warning')
+        if not request.form.get('source'):
+            flash('you need to specify "source"', 'warning')
             return None
 
-        sample_data['source'] = request.form['source']
-        sample_data['quantity'] = request.form['quantity']
         sample_data['container'] = request.form['container']
+        sample_data['source'] = request.form['source']
+        sample_data['quantity'] = request.form.get('quantity')
         if sample_data['container'] == '96 well plate':
-            sample_data['container_name'] = request.form['container_name']
-            sample_data['container_name'] = request.form['well_position']
+            for field in ['container_name', 'well_position']:
+                if not request.form.get(field):
+                    flash("you need to specify '{}'".format(field), 'warning')
+                    return None
+                sample_data[field] = request.form[field]
     else:
         if cg_apptag.is_panel:
             # expect capture kit for external samples
             if 'capture_kit' not in request.form:
-                flash('specify "capture kit" for external exomes', 'warning')
+                flash("external exomes; specify 'capture kit'", 'warning')
                 return None
-            else:
-                sample_data['capture_kit'] = request.form['capture_kit']
+            sample_data['capture_kit'] = request.form['capture_kit']
 
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:
@@ -369,7 +379,7 @@ def check_triotag(family_obj):
 def check_familyname(customer_id, family_name):
     """Check existing families in LIMS."""
     lims_samples = lims_api.get_samples(udf={'customer': customer_id,
-                                        'familyID': family_name})
+                                             'familyID': family_name})
     if len(lims_samples) > 0:
         flash("family name already exists: {}".format(family_name), 'danger')
         raise ValueError(family_name)

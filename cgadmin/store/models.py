@@ -167,7 +167,7 @@ class Sample(Model):
     family_id = Column(ForeignKey(Family.id), nullable=False)
     name = Column(types.String(64), nullable=False)
     sex = Column(types.Enum(*constants.SEXES), nullable=False)
-    status = Column(types.Enum(*constants.STATUSES), nullable=False)
+    status = Column(types.Enum(*constants.STATUSES))
     apptag_id = Column(ForeignKey('applicationtag.id'), nullable=False)
     source = Column(types.Enum(*constants.SOURCES))
     container = Column(types.Enum(*constants.CONTAINERS))
@@ -177,6 +177,7 @@ class Sample(Model):
     quantity = Column(types.Integer)
     mother_id = Column(ForeignKey('sample.id'))
     father_id = Column(ForeignKey('sample.id'))
+    comment = Column(types.Text)
 
     mother = orm.relationship('Sample', uselist=False, foreign_keys=[mother_id])
     father = orm.relationship('Sample', uselist=False, foreign_keys=[father_id])

@@ -47,7 +47,7 @@
           {{ family_form(constants, family=family) }}
         </form>
       </div>
-      {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id) }}
+      {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
     </div>
   {% endfor %}
 
