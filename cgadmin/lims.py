@@ -187,7 +187,11 @@ def add_sample_udfs(lims_sample, sample_data):
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
     require_qcok = 'yes' if family_data['require_qcok'] else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
-    lims_sample.udf['Quantity'] = sample_data.get('quantity', 'NA')
+
+    if sample_data.get('quantity'):
+        lims_sample.udf['Quantity'] = sample_data['quantity']
+    if sample_data.get('comment'):
+        lims_sample.udf['Comment'] = sample_data['comment']
 
     # fill in additional defaults...
     lims_sample.udf['Concentration (nM)'] = 'NA'

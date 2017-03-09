@@ -42,6 +42,9 @@ schema_sample = {
         },
         "quantity": {
             "type": "number"
+        },
+        "comment": {
+            "type": "string"
         }
     },
     "required": ["name", "sex", "application_tag"]

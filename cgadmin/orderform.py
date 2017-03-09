@@ -118,6 +118,9 @@ def parse_sample(raw_sample):
         'mother': raw_sample['UDF/motherID'] if raw_sample['UDF/motherID'] else None,
         'father': raw_sample['UDF/fatherID'] if raw_sample['UDF/fatherID'] else None,
         'priority': raw_sample['UDF/priority'].lower(),
+        'capture_kit': (raw_sample['UDF/Capture Library version'] if
+                        raw_sample['UDF/Capture Library version'] else None),
+        'comment': raw_sample['UDF/Comment'] if raw_sample['UDF/Comment'] else None,
     }
     return sample
 
