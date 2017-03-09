@@ -120,31 +120,31 @@
       <td>
         <input class="form-control" name="name" value="{{ sample.name if sample else old_form.name }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
       </td>
-      <td>{{ select_box('sex', constants.SEXES, sample.sex if sample else old_form.sex) }}</td>
-      <td>{{ select_box('status', constants.STATUSES, sample.status if sample) }}</td>
+      <td>{{ select_box('sex', constants.SEXES, selected=(sample.sex if sample else old_form.sex)) }}</td>
+      <td>{{ select_box('status', constants.STATUSES, selected=(sample.status if sample else old_form.status)) }}</td>
       <td>
-        {{ select_box('application_tag', apptags, sample.application_tag.id if sample, records=True) }}
+        {{ select_box('application_tag', apptags, selected=(sample.application_tag.id if sample else old_form.application_tag), records=True) }}
       </td>
-      <td>{{ select_box('capture_kit', constants.CAPTURE_KITS, selected=(sample.capture_kit if sample)) }}</td>
+      <td>{{ select_box('capture_kit', constants.CAPTURE_KITS, selected=(sample.capture_kit if sample else old_form.capture_kit)) }}</td>
       <td>
         {% if other_samples %}
-          {{ select_box('father', other_samples, selected=(sample.father.id if sample), records=True) }}
+          {{ select_box('father', other_samples, selected=(sample.father.id if sample else old_form.father), records=True) }}
         {% endif %}
       </td>
       <td>
         {% if other_samples %}
-          {{ select_box('mother', other_samples, selected=(sample.mother.id if sample), records=True) }}
+          {{ select_box('mother', other_samples, selected=(sample.mother.id if sample else old_form.mother), records=True) }}
         {% endif %}
       </td>
-      <td>{{ select_box('source', constants.SOURCES, sample.source if sample) }}</td>
+      <td>{{ select_box('source', constants.SOURCES, selected=(sample.source if sample else old_form.source)) }}</td>
       <td>
-        <input class="form-control" name="quantity" value="{{ sample.quantity if (sample and sample.quantity) }}" type="number" placeholder="Quantity">
+        <input class="form-control" name="quantity" value="{{ sample.quantity if (sample and sample.quantity) else old_form.quantity }}" type="number" placeholder="Quantity">
       </td>
-      <td>{{ select_box('container', constants.CONTAINERS, sample.container if sample) }}</td>
+      <td>{{ select_box('container', constants.CONTAINERS, selected=(sample.container if sample else old_form.container)) }}</td>
       <td>
-        <input class="form-control" name="container_name" value="{{ sample.container_name if (sample and sample.container_name) }}" pattern="[a-zA-Z0-9-]+" placeholder="Container name">
+        <input class="form-control" name="container_name" value="{{ sample.container_name if (sample and sample.container_name) else old_form.container_name }}" pattern="[a-zA-Z0-9-]+" placeholder="Container name">
       </td>
-      <td>{{ select_box('well_position', constants.WELL_POSITIONS, sample.well_position if sample) }}</td>
+      <td>{{ select_box('well_position', constants.WELL_POSITIONS, selected=(sample.well_position if sample else old_form.well_position)) }}</td>
       <td>
         <button class="btn btn-default form-control" type="submit">
           {{ 'Update' if sample else 'Add' }}
@@ -156,7 +156,7 @@
 
 {% macro select_box(name, items, selected=None, records=False) %}
   <select class="form-control" name="{{ name }}" required>
-    <option {% if not selected %}disabled{% endif %} selected>Select...</option>
+    <option {% if not selected %}selected{% endif %} disabled>Select...</option>
     {% if items is mapping %}
       {% for category, items in items.items() %}
         <optgroup label="{{ category }}">

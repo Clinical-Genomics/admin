@@ -95,7 +95,7 @@ def projects(project_id=None):
         project_obj = db.Project.get(project_id)
         project_obj.update(project_data)
         db.Project.save(project_obj)
-        flash("{} updated".format(project_obj.name), 'info')
+        flash("project: {} updated".format(project_obj.name), 'info')
     else:
         project_obj = db.Project.save(project_data)
         flash("{} created".format(project_obj.name), 'info')
@@ -150,7 +150,7 @@ def family(family_id):
             return redirect(request.referrer)
     family_obj.update(family_data)
     db.Family.save(family_obj)
-    flash("{} updated".format(family_obj.name), 'info')
+    flash("family: {} updated".format(family_obj.name), 'info')
     return redirect(url_for('project', project_id=family_obj.project.id))
 
 
@@ -194,7 +194,7 @@ def samples(family_id=None, sample_id=None):
             db.Sample.save(sample_obj)
 
         check_triotag(family_obj)
-        flash("{} updated".format(sample_obj.name), 'info')
+        flash("sample: {} updated".format(sample_obj.name), 'info')
         return redirect(url_for('project', project_id=family_obj.project.id))
     else:
         apptags = db.ApplicationTag.order_by('category')
