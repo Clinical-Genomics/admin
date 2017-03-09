@@ -3,6 +3,7 @@ import os
 import tempfile
 
 from cglims.api import ClinicalLims
+from cglims.apptag import ApplicationTag
 import coloredlogs
 from flask import (abort, Flask, render_template, request, redirect, url_for,
                    flash, jsonify)
@@ -14,7 +15,7 @@ from jsonschema import ValidationError
 from werkzeug.utils import secure_filename
 
 from cgadmin import constants
-from cgadmin.store import models
+from cgadmin.store import models, api
 from cgadmin.lims import new_lims_project
 from cgadmin.orderform import parse_orderform
 from .admin import UserManagement
@@ -107,10 +108,11 @@ def projects(project_id=None):
 def submit_project(project_id):
     """Submit and lock a project."""
     project_obj = db.Project.get(project_id)
-    project_obj.is_locked = True
-    db.Project.save(project_obj)
-    flash("project successfully submitted: {}".format(project_obj.name),
-          'success')
+    project_data = api.parse_db_project(project_obj)
+    is_success = submit_lims_project(project_data)
+    if is_success:
+        project_obj.is_locked = True
+        db.Project.save(project_obj)
     return redirect(url_for('index'))
 
 
@@ -135,23 +137,21 @@ def families(project_id):
     return redirect(url_for('project', project_id=project_id))
 
 
-@app.route('/families/<int:family_id>', methods=['GET', 'POST'])
+@app.route('/families/<int:family_id>', methods=['POST'])
 @login_required
 def family(family_id):
     """Show a family."""
     family_obj = db.Family.get(family_id)
-    if request.method == 'POST':
-        # update the family in the database
-        family_data = build_family()
-        if family_data['name'] != family_obj.name:
-            customer_id = family_obj.project.customer.customer_id
-            try:
-                check_familyname(customer_id, family_data['name'])
-            except ValueError:
-                return redirect(request.referrer)
-        family_obj.update(family_data)
-        db.Family.save(family_obj)
-        flash("{} updated".format(family_obj.name), 'info')
+    family_data = build_family()
+    if family_data['name'] != family_obj.name:
+        customer_id = family_obj.project.customer.customer_id
+        try:
+            check_familyname(customer_id, family_data['name'])
+        except ValueError:
+            return redirect(request.referrer)
+    family_obj.update(family_data)
+    db.Family.save(family_obj)
+    flash("{} updated".format(family_obj.name), 'info')
 
     apptags = db.ApplicationTag.order_by('category')
     return render_template('family.html', family=family_obj,
@@ -223,6 +223,24 @@ def orderforms():
     excel_file.save(saved_path)
     project_data = parse_orderform(saved_path)
     project_data['name'] = project_name
+    submit_lims_project(project_data)
+    return redirect(url_for('index'))
+
+
+# register blueprints
+app.register_blueprint(public_bp)
+
+# hookup extensions to app
+db.init_app(app)
+user.init_app(app)
+Bootstrap(app)
+admin.init_app(app)
+
+app.jinja_env.globals.update(db=db)
+
+
+def submit_lims_project(project_data):
+    """Handle submission of project to LIMS in Flask context."""
     try:
         lims_project = new_lims_project(db, lims_api, project_data)
     except ValidationError as error:
@@ -238,21 +256,9 @@ def orderforms():
         return redirect(request.referrer)
     except ValueError as error:
         flash(error.args[0], 'danger')
-        return redirect(request.referrer)
+        return False
     flash("submitted new project: {}!".format(lims_project.id), 'success')
-    return redirect(url_for('index'))
-
-
-# register blueprints
-app.register_blueprint(public_bp)
-
-# hookup extensions to app
-db.init_app(app)
-user.init_app(app)
-Bootstrap(app)
-admin.init_app(app)
-
-app.jinja_env.globals.update(db=db)
+    return True
 
 
 class ProtectedModelView(ModelView):
@@ -305,13 +311,14 @@ def build_sample():
     sample_data = dict(
         name=request.form['name'],
         sex=request.form['sex'],
-        status=request.form['status'],
+        status=request.form.get('status'),
     )
 
     apptag_obj = db.ApplicationTag.get(request.form['application_tag'])
+    cg_apptag = ApplicationTag(apptag_obj.name)
     sample_data['application_tag'] = apptag_obj
 
-    if not apptag_obj.name.startswith('EXX'):
+    if not cg_apptag.is_external:
         # if the sample isn't externally sequenced
         if 'container' not in request.form:
             flash('You need to specify a container!', 'warning')
@@ -327,12 +334,13 @@ def build_sample():
             sample_data['container_name'] = request.form['container_name']
             sample_data['container_name'] = request.form['well_position']
     else:
-        # expect capture kit for external samples
-        if 'capture_kit' not in request.form:
-            flash('You need to specify "capture kit" for external samples')
-            return None
-        else:
-            sample_data['capture_kit'] = request.form['capture_kit']
+        if cg_apptag.is_panel:
+            # expect capture kit for external samples
+            if 'capture_kit' not in request.form:
+                flash('specify "capture kit" for external exomes', 'warning')
+                return None
+            else:
+                sample_data['capture_kit'] = request.form['capture_kit']
 
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:

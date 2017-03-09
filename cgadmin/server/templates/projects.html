@@ -15,6 +15,12 @@
                 {{ project.name }}
               </a>
               <span class="label label-info">{{ project.user.name }}</span>
+
+              {% if project.samples|list|length > 0 %}
+                <form class="pull-right" method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
+                  <button type="submit" class="btn btn-primary btn-xs">Submit</button>
+                </form>
+              {% endif %}
             </li>
           {% else %}
             <li class="list-group-item">No projects</li>

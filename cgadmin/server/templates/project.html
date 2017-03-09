@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% from "forms.html" import project_form, family_form %}
-{% from "blocks.html" import family_panel %}
+{% from "blocks.html" import samples_table %}
 
 {% block top_nav %}
   {{ super() }}
@@ -38,8 +38,16 @@
 
   <h4>Families</h4>
   {% for family in project.families %}
-    <div class="panel-group">
-      {{ family_panel(family, constants, apptags, add_new=True) }}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">{{ family.name }}</h4>
+      </div>
+      <div class="panel-body">
+        <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
+          {{ family_form(constants, family=family) }}
+        </form>
+      </div>
+      {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id) }}
     </div>
   {% endfor %}
 
@@ -56,10 +64,4 @@
       </div>
     </div>
   </form>
-
-  {% if project.samples|list|length > 0 %}
-    <form method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
-      <button type="submit" class="btn btn-primary form-control">Submit</button>
-    </form>
-  {% endif %}
 {% endblock %}

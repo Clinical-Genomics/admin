@@ -213,11 +213,6 @@ class ApplicationTag(Model):
     def latest(self):
         return self.versions[0] if self.versions else None
 
-    @property
-    def is_external(self):
-        """Check if application tag indicates external sample."""
-        return self.name.startswith('EXX')
-
     def __unicode__(self):
         return self.name
 

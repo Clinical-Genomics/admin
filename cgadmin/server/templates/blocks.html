@@ -1,25 +1,8 @@
 {% from "forms.html" import sample_row_form %}
 
-{% macro family_panel(family, constants, apptags, add_new=False) %}
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a href="{{ url_for('family', family_id=family.id) }}">{{ family.name }}</a>
-
-        <span class="label label-default">{{ family.priority }}</span>
-        <span class="label label-default">{{ family.delivery_type }}</span>
-        <span class="label label-default">{{ family.panels|join(', ') }}</span>
-      </h4>
-    </div>
-    {% if family.samples or add_new %}
-      {{ samples_table(family.samples, constants, apptags, add_new=add_new, family_id=family.id) }}
-    {% endif %}
-  </div>
-{% endmacro %}
-
 {% macro samples_table(samples, constants, apptags, add_new=False, family_id=None) %}
   <table class="table">
-    <thead>
+    <thead class="header">
       <tr>
         <th>Sample</th>
         <th>Sex</th>

@@ -101,8 +101,8 @@ def prepare_data(admin_db, project_data):
             apptag_obj = admin_db.ApplicationTag.filter_by(name=apptag_name).first()
             if apptag_obj is None:
                 raise ValueError("unknown application tag: {}".format(apptag_name))
-            sample_data['is_external'] = apptag_obj.is_external
             sample_data['apptag'] = ApplicationTag(apptag_name)
+            sample_data['is_external'] = sample_data['apptag'].is_external
             sample_data['application_tag_version'] = apptag_obj.versions[0].version
             sample_data['family'] = family_data
             sample_data['customer'] = project_data['customer']

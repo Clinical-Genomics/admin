@@ -75,6 +75,13 @@
         <label class="control-label">Proceed only if qc is OK</label>
         <div><input name="require_qcok" type="checkbox" {{ 'checked' if family and family.require_qcok }}></div>
       </div>
+
+      <div class="col-xs-6 col-sm-4">
+        <label class="control-label">Save</label>
+        <button type="submit" class="btn btn-primary form-control">
+          Update
+        </button>
+      </div>
     </div>
   </div>
 {% endmacro %}
