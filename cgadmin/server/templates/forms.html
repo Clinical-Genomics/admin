@@ -1,24 +1,47 @@
 {% macro project_form(constants, project=None, user=None) %}
-  <div class="form-group">
-    <div class="row">
-      <div class="col-xs-6 col-sm-4">
-        <label class="control-label">Name</label>
-        <input name="name" type="text" class="form-control" pattern="[a-zA-Z0-9-\ ]+" value="{{ project.name if project }}">
-      </div>
-      <div class="col-xs-6 col-sm-4">
-        <label class="control-label">Customer</label>
-        <select name="customer" class="form-control">
-          {% if project %}
-            <option value="{{ project.customer.id }}" selected>{{ project.customer.name }}</option>
-          {% else %}
-            {% for customer in user.customers %}
-              <option value="{{ customer.id }}" selected>{{ customer.name }}</option>
-            {% endfor %}
-          {% endif %}
-        </select>
+  <form method="POST" action="{{ url_for('projects') }}">
+    <div class="form-group">
+      <div class="row">
+        <div class="col-xs-6">
+          <label class="control-label">Name</label>
+          <input name="name" type="text" class="form-control" pattern="[a-zA-Z0-9-\ ]+" value="{{ project.name if project }}" placeholder="Project name">
+        </div>
+        <div class="col-xs-6">
+          <label class="control-label">Customer</label>
+          <select name="customer" class="form-control">
+            {% if project %}
+              <option value="{{ project.customer.id }}" selected>{{ project.customer.name }}</option>
+            {% else %}
+              {% for customer in user.customers %}
+                <option value="{{ customer.id }}" selected>{{ customer.name }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
       </div>
     </div>
-  </div>
+    <button type="submit" class="btn btn-primary form-control">Add</button>
+  </form>
+{% endmacro %}
+
+{% macro upload_form() %}
+  <form action="{{ url_for('orderforms') }}" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <div class="row">
+        <div class="col-xs-6">
+          <label class="control-label">Name</label>
+          <input name="name" class="form-control" required placeholder="Project name" pattern="[a-zA-Z0-9-\ ]+">
+        </div>
+        <div class="col-xs-6">
+          <label class="control-label">Order form (Excel)</label>
+          <input name="orderform" type="file" class="form-control" required>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-default btn-primary form-control" type="submit">
+      Submit
+    </button>
+  </form>
 {% endmacro %}
 
 {% macro family_form(constants, family=None, project=None) %}

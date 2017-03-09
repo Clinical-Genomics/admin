@@ -1,84 +1,14 @@
 {% extends "layout.html" %}
-{% from "forms.html" import project_form, select_box %}
+{% from "forms.html" import project_form, select_box, upload_form %}
 
 {% block content_main %}
   {% if current_user.customers %}
-    <div class="panel-group">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title">Pending projects</h4>
-        </div>
-        <ul class="list-group">
-          {% for project in projects|rejectattr('is_locked') %}
-            <li class="list-group-item">
-              <a href="{{ url_for('project', project_id=project.id) }}">
-                {{ project.name }}
-              </a>
-              <span class="label label-info">{{ project.user.name }}</span>
-
-              {% if project.samples|list|length > 0 %}
-                <form class="pull-right" method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
-                  <button type="submit" class="btn btn-primary btn-xs">Submit</button>
-                </form>
-              {% endif %}
-            </li>
-          {% else %}
-            <li class="list-group-item">No projects</li>
-          {% endfor %}
-        </ul>
+    <div class="row">
+      <div class="col-xs-12 col-md-6">
+        {{ project_forms() }}
       </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title">Submitted projects</h4>
-        </div>
-        <ul class="list-group">
-          {% for project in projects|selectattr('is_locked') %}
-            <li class="list-group-item">
-              {{ project.name }}
-              {% if project.lims_id %}
-                (LIMS: {{ project.lims_id }})
-              {% else %}
-                (submitted)
-              {% endif %}
-              <span class="label label-info">{{ project.user.name }}</span>
-            </li>
-          {% else %}
-            <li class="list-group-item">No projects</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-
-    <form method="POST" action="{{ url_for('projects') }}">
-      <div class="panel panel-default">
-        <div class="panel-heading">New project</div>
-        <div class="panel-body">
-          {{ project_form(constants, user=current_user) }}
-        </div>
-        <div class="panel-footer">
-          <button type="submit" class="btn btn-primary form-control">Add</button>
-        </div>
-      </div>
-    </form>
-
-    <div class="panel panel-default">
-      <div class="panel-heading">Upload order form</div>
-      <div class="panel-body">
-        <form action="{{ url_for('orderforms') }}" method="POST" enctype="multipart/form-data">
-          <div class="form-group">
-            <input name="name" class="form-control" required placeholder="Project name">
-          </div>
-          <div class="row">
-            <div class="col-xs-8">
-              <input name="orderform" type="file" class="form-control" required>
-            </div>
-            <div class="col-xs-4">
-              <button class="btn btn-default form-control" type="submit">
-                Submit
-              </button>
-            </div>
-          </div>
-        </form>
+      <div class="col-xs-12 col-md-6">
+        {{ current_projects() }}
       </div>
     </div>
   {% else %}
@@ -100,3 +30,65 @@
   {% endif %}
 {% endblock %}
 
+{% macro project_forms() %}
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading">New project</div>
+      <div class="panel-body">
+        {{ project_form(constants, user=current_user) }}
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">Upload order form</div>
+      <div class="panel-body">{{ upload_form() }}</div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro current_projects() %}
+  <div class="panel-group">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Pending projects</h4>
+      </div>
+      <ul class="list-group">
+        {% for project in projects|rejectattr('is_locked') %}
+          <li class="list-group-item">
+            <a href="{{ url_for('project', project_id=project.id) }}">
+              {{ project.name }}
+            </a>
+            <span class="label label-info">{{ project.user.name }}</span>
+
+            {% if project.samples|list|length > 0 %}
+              <form class="pull-right" method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
+                <button type="submit" class="btn btn-primary btn-xs">Submit</button>
+              </form>
+            {% endif %}
+          </li>
+        {% else %}
+          <li class="list-group-item">No projects</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Submitted projects</h4>
+      </div>
+      <ul class="list-group">
+        {% for project in projects|selectattr('is_locked') %}
+          <li class="list-group-item">
+            {{ project.name }}
+            {% if project.lims_id %}
+              (LIMS: {{ project.lims_id }})
+            {% else %}
+              (submitted)
+            {% endif %}
+            <span class="label label-info">{{ project.user.name }}</span>
+          </li>
+        {% else %}
+          <li class="list-group-item">No projects</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endmacro %}
