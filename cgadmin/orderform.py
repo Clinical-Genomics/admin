@@ -59,12 +59,11 @@ def expand_family(family_id, parsed_family):
             'container': raw_sample['container'],
             'container_name': raw_sample['container_name'],
             'sex': raw_sample['sex'],
-            'quantity': raw_sample['quantity'],
             'application_tag': raw_sample['application_tag'],
             'source': raw_sample['source'],
-            'status': raw_sample['status'],
         }
-        for key in ('container', 'container_name', 'well_position'):
+        for key in ('container', 'container_name', 'well_position', 'quantity',
+                    'status'):
             if raw_sample[key]:
                 new_sample[key] = raw_sample[key]
 
@@ -72,7 +71,8 @@ def expand_family(family_id, parsed_family):
             if raw_sample[parent_id]:
                 new_sample[parent_id] = raw_sample[parent_id]
         new_family['samples'].append(new_sample)
-    new_family['panels'] = list(gene_panels)
+    if len(gene_panels) > 0:
+        new_family['panels'] = list(gene_panels)
 
     return new_family
 
@@ -94,6 +94,7 @@ def parse_sample(raw_sample):
     """Parse a raw sample row from order form sheet."""
     if ':' in raw_sample['UDF/Gene List']:
         raw_sample['UDF/Gene List'] = raw_sample['UDF/Gene List'].replace(':', ';')
+
     if raw_sample['UDF/priority'].lower() == 'förtur':
         raw_sample['UDF/priority'] = 'priority'
     quantity = int(raw_sample['UDF/Quantity']) if raw_sample['UDF/Quantity'] else None
@@ -105,7 +106,8 @@ def parse_sample(raw_sample):
         'well_position': raw_sample['Sample/Well Location'],
         'delivery_type': raw_sample['UDF/Data Analysis'],
         'sex': REV_SEX_MAP[raw_sample['UDF/Gender'].strip()],
-        'panels': raw_sample['UDF/Gene List'].split(';'),
+        'panels': (raw_sample['UDF/Gene List'].split(';') if
+                   raw_sample['UDF/Gene List'] else None),
         'require_qcok': True if raw_sample['UDF/Process only if QC OK'] else False,
         'quantity': quantity,
         'application_tag': raw_sample['UDF/Sequencing Analysis'],

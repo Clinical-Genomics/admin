@@ -77,7 +77,7 @@ schema_family = {
             "items": schema_sample
         }
     },
-    "required": ["name", "priority"]
+    "required": ["name", "priority", "delivery_type"]
 }
 
 schema_project = {

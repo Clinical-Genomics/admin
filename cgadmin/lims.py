@@ -43,7 +43,7 @@ def check_sample(lims_api, sample_data):
                                         udf={'customer': sample_data['customer']})
     # TODO: could add check if other samples are canceled...
     if len(lims_samples) > 0:
-        raise ValueError("duplicate sample name: %s", sample_data['name'])
+        raise ValueError("duplicate sample name: {}".format(sample_data['name']))
 
     family_id = sample_data['family']['name']
     lims_samples = lims_api.get_samples(udf={'customer': sample_data['customer'],
@@ -51,9 +51,22 @@ def check_sample(lims_api, sample_data):
     if len(lims_samples) > 0:
         raise ValueError("duplicate family name: {}".format(family_id))
 
-    if sample_data['is_external'] and sample_data['apptag'].is_panel:
-        if sample_data.get('capture_kit') is None:
-            raise ValueError("external exome samples require a capture kit!")
+    if sample_data['is_external']:
+        if sample_data['apptag'].is_panel and sample_data.get('capture_kit') is None:
+            raise ValueError("external exome samples needs 'capture kit'!")
+    else:
+        if sample_data.get('container') is None:
+            raise ValueError("non-external sample missing 'container': {}"
+                             .format(sample_data['name']))
+        if sample_data.get('source') is None:
+            raise ValueError("non-external sample missing 'source': {}"
+                             .format(sample_data['name']))
+
+    if sample_data['family']['delivery_type'] == 'scout':
+        log.debug("sample intended for Scout upload, checking required fields")
+        if sample_data.get('status') is None:
+            raise ValueError("sample needs 'status' for upload to Scout: {}"
+                             .format(sample_data['name']))
 
 
 def check_family(lims_api, family_data):
@@ -73,6 +86,11 @@ def check_family(lims_api, family_data):
                     sample_name = sample_data['name']
                     raise ValueError("sample relation error: {}, {} -> {}"
                                      .format(sample_name, parent_key, parent_id))
+
+    if family_data['delivery_type'] == 'scout':
+        if 'panels' not in family_data:
+            raise ValueError("family needs 'gene panel' for upload to Scout: {}"
+                             .format(family_data['name']))
 
 
 def prepare_data(admin_db, project_data):
@@ -142,7 +160,7 @@ def make_sample(lims_api, sample_data, lims_project, lims_container):
     lims_sample = Sample._create(lims_api, creation_tag='samplecreation',
                                  name=sample_data['name'], project=lims_project)
     add_sample_udfs(lims_sample, sample_data)
-    position = sample_data['well_position'] or '1:1'
+    position = sample_data.get('well_position') or '1:1'
     lims_sample = save_sample(lims_api, lims_sample, lims_container, position)
     return lims_sample
 
@@ -169,7 +187,7 @@ def add_sample_udfs(lims_sample, sample_data):
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
     require_qcok = 'yes' if family_data['require_qcok'] else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
-    lims_sample.udf['Quantity'] = sample_data['quantity']
+    lims_sample.udf['Quantity'] = sample_data.get('quantity', 'NA')
 
     # fill in additional defaults...
     lims_sample.udf['Concentration (nM)'] = 'NA'
