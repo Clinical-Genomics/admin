@@ -102,13 +102,13 @@ def parse_sample(raw_sample):
 
     sample = {
         'name': raw_sample['Sample/Name'],
-        'container': raw_sample['Container/Type'],
-        'container_name': raw_sample['Container/Name'],
-        'well_position': raw_sample['Sample/Well Location'],
-        'delivery_type': raw_sample['UDF/Data Analysis'],
+        'container': raw_sample.get('Container/Type'),
+        'container_name': raw_sample.get('Container/Name'),
+        'well_position': raw_sample.get('Sample/Well Location'),
+        'delivery_type': raw_sample.get('UDF/Data Analysis'),
         'sex': REV_SEX_MAP[raw_sample['UDF/Gender'].strip()],
         'panels': (raw_sample['UDF/Gene List'].split(';') if
-                   raw_sample['UDF/Gene List'] else None),
+                   raw_sample.get('UDF/Gene List') else None),
         'require_qcok': True if raw_sample['UDF/Process only if QC OK'] else False,
         'quantity': quantity,
         'application_tag': raw_sample['UDF/Sequencing Analysis'],
