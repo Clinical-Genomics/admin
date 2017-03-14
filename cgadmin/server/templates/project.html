@@ -1,62 +1,73 @@
 {% extends "layout.html" %}
-{% from "forms.html" import project_form, family_form %}
-{% from "blocks.html" import samples_table %}
+{% from "forms.html" import project_form, family_form, sample_row_form %}
 
 {% block top_nav %}
-  {{ super() }}
-  <li class="active">
-    <a href="{{ url_for('project', project_id=project.id) }}">
-      {{ project.name }}
+  <li class="nav-item active">
+    <a class="nav-link" href="{{ url_for('project', project_id=project.id) }}">
+      Project: {{ project.name }}
     </a>
   </li>
+  {{ super() }}
 {% endblock %}
 
 {% block content_main %}
-  <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
-    <div class="panel-group" id="accordion">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title">
-            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-              Edit project: {{ project.name }}
-            </a>
-          </h4>
-        </div>
-        <div id="collapseOne" class="panel-collapse collapse">
-          <div class="panel-body">
+  <section>
+    <div class="container">
+      <div class="card">
+        <div class="card-block">
+          <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
             {{ project_form(constants, project=project) }}
-          </div>
+          </form>
         </div>
       </div>
     </div>
-  </form>
+  </section>
 
-  <h4>Families</h4>
   {% for family in project.families %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">{{ family.name }}</h4>
-      </div>
-      <div class="panel-body">
-        <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
-          {{ family_form(constants, family=family) }}
-        </form>
-      </div>
+    <section>
+      <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
+        {{ family_form(constants, family=family) }}
+      </form>
       {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
-    </div>
+    </section>
   {% endfor %}
 
-  <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
-    <div class="panel panel-default">
-      <div class="panel-heading">New family</div>
-      <div class="panel-body">
-        {{ family_form(constants, project=project) }}
-      </div>
-      <div class="panel-footer">
-        <button type="submit" class="btn btn-default form-control">
-          Add
-        </button>
-      </div>
-    </div>
-  </form>
+  <section>
+    <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
+      {{ family_form(constants, project=project) }}
+      <button class="btn btn-primary form-control">Add new family</button>
+    </form>
+  </section>
 {% endblock %}
+
+{% macro samples_table(samples, constants, apptags, add_new=False, family_id=None,
+                       old_form=None) %}
+  <table class="table table-responsive">
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Sex</th>
+        <th>Status</th>
+        <th>Application tag</th>
+        <th>Capture kit</th>
+        <th>Father</th>
+        <th>Mother</th>
+        <th>Source</th>
+        <th>Quantity</th>
+        <th>Container</th>
+        <th>Container name</th>
+        <th>Well position</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sample in samples %}
+        {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list)) }}
+      {% endfor %}
+      {% if add_new %}
+        {{ sample_row_form(constants, apptags, family_id=family_id,
+                           other_samples=samples, old_form=old_form) }}
+      {% endif %}
+    </tbody>
+  </table>
+{% endmacro %}

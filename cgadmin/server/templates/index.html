@@ -3,6 +3,9 @@
 {% block content_main %}
   <div class="jumbotron">
     <h1>Welcome to Clinical Genomics!</h1>
-    <p>To place and review orders, please log in using the button in the top left ↖️</p>
+    <p>To place and review orders, please log in</p>
+    <form action="{{ url_for('google.login') }}">
+      <button class="btn btn-outline-success">Login</button>
+    </form>
   </div>
 {% endblock %}
