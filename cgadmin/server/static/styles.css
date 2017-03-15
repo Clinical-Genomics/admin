@@ -13,7 +13,11 @@ section {
 }
 
 th {
-  font-size: .9rem;
+  font-size: .8rem;
+}
+
+.btn {
+  cursor: pointer;
 }
 
 .space-below {
@@ -84,4 +88,8 @@ th {
   display: inline-block;
   vertical-align: text-top;
   fill: currentColor;
+}
+
+.custom-file {
+  width: 100%;
 }

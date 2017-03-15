@@ -3,7 +3,7 @@
     <div class="form-group">
       <div class="row">
         <div class="col">
-          <input name="name" type="text" class="form-control" pattern="[a-zA-Z0-9-\ ]+" value="{{ project.name if project }}" placeholder="Project name">
+          <input name="name" type="text" class="form-control" pattern="^[a-zA-Z0-9.-]*$" value="{{ project.name if project }}" placeholder="Project name">
         </div>
         <div class="col">
           <select name="customer" class="form-control">
@@ -26,6 +26,7 @@
             <input type="file" id="file" class="custom-file-input" placeholder="Upload order form (optional)">
             <span class="custom-file-control"></span>
           </label>
+          <small class="form-text text-muted">Optionally upload an order form directly.</small>
         </div>
       {% endif %}
 
@@ -39,69 +40,62 @@
 {% endmacro %}
 
 {% macro family_form(constants, family=None, project=None) %}
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Gene panels</th>
-        <th>Priority</th>
-        <th>Data analysis</th>
-        <th>Proceed only if QC is OK</th>
-        <th>Actions</th>
-      </tr>
-      <tbody>
-        <tr>
-          <td>
-            <input name="name"
+  <div class="form-group row">
+    <div class="col">
+      <input name="name"
                class="form-control"
                pattern="[a-zA-Z0-9-]+"
                value="{{ family.name if family }}"
                placeholder="Family name"
                required>
-          </td>
-          <td>
-            <select name="panels" class="form-control" multiple>
-              {% for panel in constants.PANELS %}
-                <option value="{{ panel }}"
-                        {% if family and panel in family.panels %}selected{% endif %}>
-                  {{ panel }}
-                </option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            <select name="priority" class="form-control" required>
-              {% for prio in constants.PRIORITIES %}
-                <option value="{{ prio }}"
-                        {% if family and prio == family.priority %}selected{% endif %}>
-                  {{ prio }}
-                </option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            <select name="delivery" class="form-control">
-              <option disabled selected>Select...</option>
-              {% for type in constants.DELIVERY_TYPES %}
-                <option value="{{ type }}"
-                        {% if (family and type == family.delivery_type) or (type == 'scout' and project and project.customer.scout_access) %}selected{% endif %}>
-                  {{ type }}
-                </option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            <input name="require_qcok" type="checkbox" {{ 'checked' if family and family.require_qcok }}>
-          </td>
-          <td>
-            <button type="submit" class="btn btn-secondary form-control">
-              Update
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </thead>
-  </table>
+      <small class="form-text text-muted">Name</small>
+    </div>
+    <div class="col">
+      <select name="panels" class="form-control" multiple>
+        {% for panel in constants.PANELS %}
+          <option value="{{ panel }}"
+                  {% if family and panel in family.panels %}selected{% endif %}>
+            {{ panel }}
+          </option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted">Gene panels</small>
+    </div>
+    <div class="col">
+      <select name="priority" class="form-control" required>
+        {% for prio in constants.PRIORITIES %}
+          <option value="{{ prio }}"
+                  {% if family and prio == family.priority %}selected{% endif %}>
+            {{ prio }}
+          </option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted">Priority</small>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <select name="delivery" class="form-control">
+        <option disabled selected>Select...</option>
+        {% for type in constants.DELIVERY_TYPES %}
+          <option value="{{ type }}"
+                  {% if (family and type == family.delivery_type) or (type == 'scout' and project and project.customer.scout_access) %}selected{% endif %}>
+            {{ type }}
+          </option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted">Data analysis</small>
+    </div>
+    <div class="col">
+      <input name="require_qcok" type="checkbox" {{ 'checked' if family and family.require_qcok }}>
+      <small class="form-text text-muted">Require QC = OK</small>
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-{{ 'secondary' if family else 'primary' }} form-control">
+        {{ 'Update' if family else 'Add' }}
+      </button>
+    </div>
+  </div>
 {% endmacro %}
 
 {% macro sample_row_form(constants, apptags, sample=None, family_id=None,
@@ -111,41 +105,65 @@
   {% else %}
     <form action="{{ url_for('samples', family_id=family_id) }}" method="POST">
   {% endif %}
-    <tr>
-      <td>
+    <div class="row space-below">
+      <div class="col pr-0">
         <input class="form-control form-control-sm" name="name" value="{{ sample.name if sample else old_form.name }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
-      </td>
-      <td>{{ select_box('sex', constants.SEXES, selected=(sample.sex if sample else old_form.sex)) }}</td>
-      <td>{{ select_box('status', constants.STATUSES, selected=(sample.status if sample else old_form.status)) }}</td>
-      <td>
+        <small class="form-text text-muted">Name</small>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('sex', constants.SEXES, selected=(sample.sex if sample else old_form.sex)) }}
+        <small class="form-text text-muted">Sex</small>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('status', constants.STATUSES, selected=(sample.status if sample else old_form.status)) }}
+        <small class="form-text text-muted">Status</small>
+      </div>
+      <div class="col pr-0">
         {{ select_box('application_tag', apptags, selected=(sample.application_tag.id if sample else old_form.application_tag), records=True) }}
-      </td>
-      <td>{{ select_box('capture_kit', constants.CAPTURE_KITS, selected=(sample.capture_kit if sample else old_form.capture_kit)) }}</td>
-      <td>
+        <small class="form-text text-muted">Application</small>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('capture_kit', constants.CAPTURE_KITS, selected=(sample.capture_kit if sample else old_form.capture_kit)) }}
+        <small class="form-text text-muted">Capture kit</small>
+      </div>
+      <div class="col pr-0">
         {% if other_samples %}
           {{ select_box('father', other_samples, selected=(sample.father.id if sample else old_form.father), records=True) }}
+          <small class="form-text text-muted">Father</small>
         {% endif %}
-      </td>
-      <td>
+      </div>
+      <div class="col pr-0">
         {% if other_samples %}
           {{ select_box('mother', other_samples, selected=(sample.mother.id if sample else old_form.mother), records=True) }}
+          <small class="form-text text-muted">Mother</small>
         {% endif %}
-      </td>
-      <td>{{ select_box('source', constants.SOURCES, selected=(sample.source if sample else old_form.source)) }}</td>
-      <td>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('source', constants.SOURCES, selected=(sample.source if sample else old_form.source)) }}
+        <small class="form-text text-muted">Source</small>
+      </div>
+      <div class="col pr-0">
         <input class="form-control form-control-sm" name="quantity" value="{{ sample.quantity if (sample and sample.quantity) else old_form.quantity }}" type="number" placeholder="Quantity">
-      </td>
-      <td>{{ select_box('container', constants.CONTAINERS, selected=(sample.container if sample else old_form.container)) }}</td>
-      <td>
+        <small class="form-text text-muted">Quantity</small>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('container', constants.CONTAINERS, selected=(sample.container if sample else old_form.container)) }}
+        <small class="form-text text-muted">Container</small>
+      </div>
+      <div class="col pr-0">
         <input class="form-control form-control-sm" name="container_name" value="{{ sample.container_name if (sample and sample.container_name) else old_form.container_name }}" pattern="[a-zA-Z0-9-]+" placeholder="Container name">
-      </td>
-      <td>{{ select_box('well_position', constants.WELL_POSITIONS, selected=(sample.well_position if sample else old_form.well_position)) }}</td>
-      <td>
+        <small class="form-text text-muted">Cont. name</small>
+      </div>
+      <div class="col pr-0">
+        {{ select_box('well_position', constants.WELL_POSITIONS, selected=(sample.well_position if sample else old_form.well_position)) }}
+        <small class="form-text text-muted">Well pos.</small>
+      </div>
+      <div class="col">
         <button class="btn btn-primary btn-sm form-control" type="submit">
           {{ 'Update' if sample else 'Add' }}
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   </form>
 {% endmacro %}
 

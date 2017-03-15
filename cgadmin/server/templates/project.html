@@ -2,72 +2,79 @@
 {% from "forms.html" import project_form, family_form, sample_row_form %}
 
 {% block top_nav %}
+  {{ super() }}
   <li class="nav-item active">
     <a class="nav-link" href="{{ url_for('project', project_id=project.id) }}">
       Project: {{ project.name }}
     </a>
   </li>
-  {{ super() }}
 {% endblock %}
 
 {% block content_main %}
-  <section>
-    <div class="container">
+  <div class="container">
+    <section>
       <div class="card">
         <div class="card-block">
+          <h4 class="card-title space-below">Project details</h4>
           <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
             {{ project_form(constants, project=project) }}
           </form>
         </div>
       </div>
-    </div>
-  </section>
-
-  {% for family in project.families %}
-    <section>
-      <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
-        {{ family_form(constants, family=family) }}
-      </form>
-      {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
     </section>
-  {% endfor %}
+
+    <section>
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title space-below">New family</h4>
+          <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
+            {{ family_form(constants, project=project) }}
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <section>
-    <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
-      {{ family_form(constants, project=project) }}
-      <button class="btn btn-primary form-control">Add new family</button>
-    </form>
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+          {% for family in project.families %}
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if loop.first }}" data-toggle="tab" href="#{{ family.name }}">
+                {{ family.name }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="tab-content">
+        {% for family in project.families %}
+          <div class="tab-pane {{ 'active' if loop.first }}" id="{{ family.name }}">
+            <div class="card-block">
+              <h4 class="card-title">Family details</h4>
+              <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
+                {{ family_form(constants, family=family) }}
+              </form>
+            </div>
+            <div class="card-block">
+              <h4 class="card-title">Samples</h4>
+              {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
   </section>
 {% endblock %}
 
 {% macro samples_table(samples, constants, apptags, add_new=False, family_id=None,
                        old_form=None) %}
-  <table class="table table-responsive">
-    <thead>
-      <tr>
-        <th>Sample</th>
-        <th>Sex</th>
-        <th>Status</th>
-        <th>Application tag</th>
-        <th>Capture kit</th>
-        <th>Father</th>
-        <th>Mother</th>
-        <th>Source</th>
-        <th>Quantity</th>
-        <th>Container</th>
-        <th>Container name</th>
-        <th>Well position</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for sample in samples %}
-        {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list)) }}
-      {% endfor %}
-      {% if add_new %}
-        {{ sample_row_form(constants, apptags, family_id=family_id,
-                           other_samples=samples, old_form=old_form) }}
-      {% endif %}
-    </tbody>
-  </table>
+  {% for sample in samples %}
+    {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list)) }}
+  {% endfor %}
+  {% if add_new %}
+    {{ sample_row_form(constants, apptags, family_id=family_id,
+                       other_samples=samples, old_form=old_form) }}
+  {% endif %}
 {% endmacro %}

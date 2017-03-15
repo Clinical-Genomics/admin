@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 {% from "forms.html" import select_box, project_form %}
+{% from "utils.html" import flash_messages %}
 
-{% block content_main %}
+{% block content %}
   <div class="container">
+    {{ flash_messages() }}
+
     {% if current_user.customers %}
       <section>
         <div class="card">
