@@ -20,6 +20,10 @@ th {
   cursor: pointer;
 }
 
+.custom-file-control:after {
+  content: attr(data-content) !important;
+}
+
 .space-below {
   margin-bottom: 2rem;
 }

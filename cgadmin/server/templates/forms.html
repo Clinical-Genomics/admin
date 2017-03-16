@@ -1,5 +1,5 @@
 {% macro project_form(constants, project=None, user=None, upload=False) %}
-  <form method="POST" action="{{ url_for('projects') }}">
+  <form method="POST" action="{{ url_for('projects') }}" enctype="multipart/form-data">
     <div class="form-group">
       <div class="row">
         <div class="col">
@@ -23,8 +23,8 @@
       {% if upload %}
         <div class="col">
           <label class="custom-file">
-            <input type="file" id="file" class="custom-file-input" placeholder="Upload order form (optional)">
-            <span class="custom-file-control"></span>
+            <input name="orderform" type="file" id="file" class="custom-file-input">
+            <span class="custom-file-control" data-content="Choose file..."></span>
           </label>
           <small class="form-text text-muted">Optionally upload an order form directly.</small>
         </div>

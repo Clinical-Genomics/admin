@@ -90,6 +90,11 @@ def project(project_id):
 @login_required
 def projects(project_id=None):
     """Add a new project to the database."""
+    if request.method == 'POST' and 'orderform' in request.files:
+        project_data = collect_project_data()
+        submit_lims_project(project_data)
+        return redirect(url_for('index'))
+
     project_data = build_project()
     if project_id:
         project_obj = db.Project.get(project_id)
@@ -217,14 +222,7 @@ def api_projects():
 @app.route('/orderforms', methods=['POST'])
 def orderforms():
     """Upload order form in Excel format to submit new project."""
-    excel_file = request.files['orderform']
-    project_name = request.form['name']
-    filename = secure_filename(excel_file.filename)
-    temp_dir = tempfile.gettempdir()
-    saved_path = os.path.join(temp_dir, filename)
-    excel_file.save(saved_path)
-    project_data = parse_orderform(saved_path)
-    project_data['name'] = project_name
+    project_data = collect_project_data()
     submit_lims_project(project_data)
     return redirect(url_for('index'))
 
@@ -239,6 +237,19 @@ Bootstrap(app)
 admin.init_app(app)
 
 app.jinja_env.globals.update(db=db, constants=constants)
+
+
+def collect_project_data():
+    """Collect data about a project submission."""
+    excel_file = request.files['orderform']
+    project_name = request.form['name']
+    filename = secure_filename(excel_file.filename)
+    temp_dir = tempfile.gettempdir()
+    saved_path = os.path.join(temp_dir, filename)
+    excel_file.save(saved_path)
+    project_data = parse_orderform(saved_path)
+    project_data['name'] = project_name
+    return project_data
 
 
 def submit_lims_project(project_data):

@@ -11,61 +11,65 @@
 {% endblock %}
 
 {% block content_main %}
-  <div class="container">
-    <section>
-      <div class="card">
-        <div class="card-block">
-          <h4 class="card-title space-below">Project details</h4>
-          <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
-            {{ project_form(constants, project=project) }}
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="card">
-        <div class="card-block">
-          <h4 class="card-title space-below">New family</h4>
-          <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
-            {{ family_form(constants, project=project) }}
-          </form>
-        </div>
-      </div>
-    </section>
-  </div>
-
   <section>
     <div class="card">
-      <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-          {% for family in project.families %}
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if loop.first }}" data-toggle="tab" href="#{{ family.name }}">
-                {{ family.name }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-      <div class="tab-content">
-        {% for family in project.families %}
-          <div class="tab-pane {{ 'active' if loop.first }}" id="{{ family.name }}">
-            <div class="card-block">
-              <h4 class="card-title">Family details</h4>
-              <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
-                {{ family_form(constants, family=family) }}
-              </form>
-            </div>
-            <div class="card-block">
-              <h4 class="card-title">Samples</h4>
-              {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
-            </div>
-          </div>
-        {% endfor %}
+      <div class="card-block">
+        <h4 class="card-title space-below">Project details</h4>
+        <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
+          {{ project_form(constants, project=project) }}
+        </form>
       </div>
     </div>
   </section>
+
+  <section>
+    <div class="card">
+      <div class="card-block">
+        <h4 class="card-title space-below">New family</h4>
+        <form method="POST" action="{{ url_for('families', project_id=project.id) }}">
+          {{ family_form(constants, project=project) }}
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block content_extra %}
+  {% if project.families %}
+    <div class="container-fluid">
+      <section>
+        <div class="card">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+              {% for family in project.families %}
+                <li class="nav-item">
+                  <a class="nav-link {{ 'active' if loop.first }}" data-toggle="tab" href="#{{ family.name }}">
+                    {{ family.name }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="tab-content">
+            {% for family in project.families %}
+              <div class="tab-pane {{ 'active' if loop.first }}" id="{{ family.name }}">
+                <div class="card-block">
+                  <h4 class="card-title">Family details</h4>
+                  <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
+                    {{ family_form(constants, family=family) }}
+                  </form>
+                </div>
+                <div class="card-block">
+                  <h4 class="card-title">Samples</h4>
+                  {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% macro samples_table(samples, constants, apptags, add_new=False, family_id=None,

@@ -36,11 +36,13 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container-fluid">
+  <div class="container">
     {{ flash_messages() }}
 
     {% block content_main %}{% endblock %}
   </div>
+
+  {% block content_extra %}{% endblock %}
 {% endblock %}
 
 {% block scripts %}
