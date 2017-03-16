@@ -50,6 +50,7 @@ class Customer(Model):
     invoices = orm.relationship('Invoice', cascade='all,delete', backref='customer')
     users = orm.relationship('User', secondary=customer_user_link,
                              back_populates='customers', cascade='all,delete')
+    projects = orm.relationship('Project', cascade='all,delete', backref='customer')
 
     def __unicode__(self):
         return self.customer_id
@@ -89,7 +90,6 @@ class Project(Model):
     is_locked = Column(types.Boolean)
     lims_id = Column(types.String(32))
 
-    customer = orm.relationship(Customer, cascade='all,delete', backref='projects')
     families = orm.relationship('Family', cascade='all,delete', backref='project')
 
     @property

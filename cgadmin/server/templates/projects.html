@@ -1,94 +1,97 @@
 {% extends "layout.html" %}
-{% from "forms.html" import project_form, select_box, upload_form %}
+{% from "forms.html" import select_box, project_form %}
+{% from "utils.html" import flash_messages %}
 
-{% block content_main %}
-  {% if current_user.customers %}
-    <div class="row">
-      <div class="col-xs-12 col-md-6">
-        {{ project_forms() }}
-      </div>
-      <div class="col-xs-12 col-md-6">
-        {{ current_projects() }}
-      </div>
-    </div>
-  {% else %}
-    <h4>Which customer do you belong to?</h4>
-    <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">
-      <div class="row">
-        <div class="col-xs-8">
-          <select class="form-control" name="customers" multiple required>
-            {% for customer in customers %}
-              <option value="{{ customer.id }}">{{ customer.name }}</option>
-            {% endfor %}
-          </select>
+{% block content %}
+  <div class="container">
+    {{ flash_messages() }}
+
+    {% if current_user.customers %}
+      <section>
+        <div class="card">
+          <div class="card-block">
+            {{ project_form(constants, user=current_user, upload=True) }}
+          </div>
         </div>
-        <div class="col-xs-4">
-          <button type="submit" class="btn btn-primary form-control">Save</button>
+      </section>
+      <section>
+        {{ current_projects_table() }}
+      </section>
+    {% else %}
+      <div class="card" style="width: 40rem;">
+        <div class="card-block">
+          <h4 class="card-title">Which customer do you belong to?</h4>
+          {{ customer_form() }}
         </div>
       </div>
-    </form>
-  {% endif %}
+    {% endif %}
+  </div>
 {% endblock %}
 
-{% macro project_forms() %}
-  <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">New project</div>
-      <div class="panel-body">
-        {{ project_form(constants, user=current_user) }}
-      </div>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">Upload order form</div>
-      <div class="panel-body">{{ upload_form() }}</div>
-    </div>
-  </div>
-{% endmacro %}
-
-{% macro current_projects() %}
-  <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">Pending projects</h4>
-      </div>
-      <ul class="list-group">
-        {% for project in projects|rejectattr('is_locked') %}
-          <li class="list-group-item">
+{% macro current_projects_table() %}
+  <h4>Current projects</h4>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Creator</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+        <tr>
+          <td>
             <a href="{{ url_for('project', project_id=project.id) }}">
               {{ project.name }}
             </a>
-            <span class="label label-info">{{ project.user.name }}</span>
-
-            {% if project.samples|list|length > 0 %}
-              <form class="pull-right" method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
-                <button type="submit" class="btn btn-primary btn-xs">Submit</button>
+          </td>
+          <td>{{ project.user.name }}</td>
+          <td>
+            {% if project.is_locked %}
+              LIMS: {{ project.lims_id or 'unknown' }}
+            {% elif project.samples|list|length > 0 %}
+              <form method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
+                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
               </form>
             {% endif %}
-          </li>
-        {% else %}
-          <li class="list-group-item">No projects</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">Submitted projects</h4>
-      </div>
-      <ul class="list-group">
-        {% for project in projects|selectattr('is_locked') %}
-          <li class="list-group-item">
-            {{ project.name }}
-            {% if project.lims_id %}
-              (LIMS: {{ project.lims_id }})
-            {% else %}
-              (submitted)
-            {% endif %}
-            <span class="label label-info">{{ project.user.name }}</span>
-          </li>
-        {% else %}
-          <li class="list-group-item">No projects</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="3">No projects.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endmacro %}
+
+{% macro customer_form() %}
+  <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">
+    <div class="row">
+      <div class="col-8">
+        <select class="form-control" name="customers" multiple required>
+          {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-4">
+        <button class="btn btn-primary form-control">Save</button>
+      </div>
+    </div>
+  </form>
+{% endmacro %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script>
+    $('input[type=file]').change(function() {
+      var fieldVal = $(this).val().split('\\').pop();
+      if (fieldVal != undefined || fieldVal != "") {
+        $(this).next('.custom-file-control').attr('data-content', fieldVal);
+      }
+    });
+  </script>
+{% endblock %}

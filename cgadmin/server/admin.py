@@ -5,9 +5,7 @@ from flask_dance.consumer import oauth_authorized
 from flask import flash, redirect, request, session, url_for
 from flask_login import (LoginManager, login_user, login_required, logout_user,
                          AnonymousUserMixin, UserMixin)
-from path import Path
 from sqlalchemy import Column, types
-import yaml
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -55,15 +53,11 @@ class UserManagement(object):
 
         self.login_manager = None
         self.blueprint = None
-        self.user_db_path = None
 
         self.setup()
 
     def init_app(self, app):
         app.register_blueprint(self.blueprint, url_prefix='/login')
-
-        # user admin
-        self.user_db_path = Path(app.config['USER_DATABASE_PATH'])
 
         @app.route('/login')
         def login():
@@ -110,28 +104,16 @@ class UserManagement(object):
 
                 # check if the user is whitelisted
                 email = userinfo['email']
-                if not this.confirm(email):
+                user_obj = this.db.User.filter_by(email=email).first()
+                if user_obj is None:
                     flash("email not whitelisted: {}".format(email), 'danger')
                     return redirect(url_for('index'))
 
-                user = this.db.User.filter_by(google_id=userinfo['id']).first()
-                if user is None:
-                    user = this.db.User.filter_by(email=email).first()
-                if user:
-                    user.update(name=userinfo['name'],
-                                avatar=userinfo['picture'],
-                                email=email,
+                user_obj.update(name=userinfo['name'], avatar=userinfo['picture'],
                                 google_id=userinfo['id'])
-                else:
-                    user = dict(
-                        google_id=userinfo['id'],
-                        name=userinfo['name'],
-                        avatar=userinfo['picture'],
-                        email=email
-                    )
 
-                user = this.db.User.save(user)
-                login_user(user)
+                user_obj = this.db.User.save(user_obj)
+                login_user(user_obj)
                 flash('Successfully signed in with Google', 'success')
             else:
                 message = "Failed to fetch user info from {}".format(blueprint.name)
@@ -139,28 +121,3 @@ class UserManagement(object):
 
             next_url = session.pop('next_url', None)
             return redirect(next_url or url_for('index'))
-
-    def confirm(self, email):
-        """Confirm that a user has been whitelisted."""
-        # read in the file on every request
-        with self.user_db_path.open('r') as in_handle:
-            whitelisted_emails = yaml.load(in_handle)['whitelist']
-        return email in whitelisted_emails
-
-
-class UserAdmin(object):
-    """docstring for UserAdmin"""
-    def __init__(self, database_path=None):
-        super(UserAdmin, self).__init__()
-        self.database_path = Path(database_path) if database_path else None
-
-    def init_app(self, app):
-        """Initialize in Flask app context."""
-        self.database_path = Path(app.config['USER_DATABASE_PATH'])
-
-    def confirm(self, email):
-        """Confirm that a user has been whitelisted."""
-        # read in the file on every request
-        with self.database_path.open('r') as in_handle:
-            whitelisted_emails = yaml.load(in_handle)['whitelist']
-        return email in whitelisted_emails
