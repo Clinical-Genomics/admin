@@ -205,6 +205,9 @@ class ApplicationTag(Model):
     turnaround_time = Column(types.Integer)
     priority_processing = Column(types.Boolean)
 
+    last_updated = Column(types.DateTime, onupdate=datetime.datetime.now)
+    comment = Column(types.Text)
+
     versions = orm.relationship('ApplicationTagVersion',
                                 order_by='ApplicationTagVersion.version',
                                 backref='apptag')
@@ -238,8 +241,10 @@ class ApplicationTagVersion(Model):
     is_accredited = Column(types.Boolean)
     description = Column(types.Text)
     limitations = Column(types.Text)
-    comment = Column(types.Text)
     percent_kth = Column(types.Integer)
+
+    last_updated = Column(types.DateTime, onupdate=datetime.datetime.now)
+    comment = Column(types.Text)
 
     def __unicode__(self):
         return "{}:{}".format(self.apptag.name, self.version)
@@ -261,6 +266,9 @@ class Method(Model):
     description = Column(types.Text, nullable=False)
     limitations = Column(types.Text)
 
+    last_updated = Column(types.DateTime, onupdate=datetime.datetime.now)
+    comment = Column(types.Text)
+
     @property
     def full_name(self):
         """Return the full name with number and version."""
@@ -280,4 +288,4 @@ class Invoice(Model):
     id = Column(types.Integer, primary_key=True)
     customer_id = Column(ForeignKey(Customer.id), nullable=False)
     invoice_id = Column(types.String(32), nullable=False)
-    invoiced_at = Column(types.Date, default=datetime.now)
+    invoiced_at = Column(types.Date, default=datetime.now
