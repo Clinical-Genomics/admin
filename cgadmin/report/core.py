@@ -18,13 +18,19 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def report(context, in_data):
     """Generate a QC report for a case."""
-    data = json.load(in_data)
-    db = context.obj['db']
-    data['today'] = datetime.today()
-    data['customer'] = db.Customer.filter_by(customer_id=data['customer']).first()
+    admin_db = context.obj['db']
+    case_data = json.load(in_data)
+    template_out = export_report(admin_db, case_data)
+    click.echo(template_out)
+
+
+def export_report(admin_db, case_data):
+    """Generate a delivery report."""
+    case_data['today'] = datetime.today()
+    case_data['customer'] = admin_db.Customer.filter_by(customer_id=case_data['customer']).first()
 
     apptag_ids = set()
-    for sample in data['samples']:
+    for sample in case_data['samples']:
         apptag_ids.add((sample['app_tag'], sample['app_tag_version']))
         method_types = ['library_prep_method', 'sequencing_method', 'delivery_method']
         for method_type in method_types:
@@ -32,7 +38,7 @@ def report(context, in_data):
             if document_raw is None:
                 continue
             doc_no, doc_version = [int(part) for part in document_raw.split(':')]
-            method = db.Method.filter_by(document=doc_no).first()
+            method = admin_db.Method.filter_by(document=doc_no).first()
             if method is None or method.document_version != doc_version:
                 log.warn("method not found in admin db: %s", document_raw)
             sample[method_type] = method
@@ -49,15 +55,15 @@ def report(context, in_data):
 
     versions = []
     for apptag_id, apptag_version in apptag_ids:
-        version = (db.ApplicationTagVersion.join(ApplicationTagVersion.apptag)
-                     .filter(ApplicationTag.name == apptag_id,
-                             ApplicationTagVersion.version == apptag_version)
-                     .first())
+        version = (admin_db.ApplicationTagVersion.join(ApplicationTagVersion.apptag)
+                           .filter(ApplicationTag.name == apptag_id,
+                                   ApplicationTagVersion.version == apptag_version)
+                           .first())
         if version:
             versions.append(version)
     is_accredited = all(version.is_accredited for version in versions)
-    data['apptags'] = versions
-    data['accredited'] = is_accredited
+    case_data['apptags'] = versions
+    case_data['accredited'] = is_accredited
 
     env = Environment(
         loader=PackageLoader('cgadmin', 'report/templates'),
@@ -65,6 +71,6 @@ def report(context, in_data):
     )
 
     template = env.get_template('report.html')
-    template_out = template.render(**data)
+    template_out = template.render(**case_data)
 
-    click.echo(template_out)
+    return template_out
