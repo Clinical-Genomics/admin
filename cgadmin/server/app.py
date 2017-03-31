@@ -15,7 +15,8 @@ from jsonschema import ValidationError
 from werkzeug.utils import secure_filename
 
 from cgadmin import constants
-from cgadmin.store import models, api
+from cgadmin.store import models
+from cgadmin.store.parse import parse_db_project
 from cgadmin.lims import new_lims_project
 from cgadmin.orderform import parse_orderform
 from .admin import UserManagement
@@ -112,7 +113,7 @@ def projects(project_id=None):
 def submit_project(project_id):
     """Submit and lock a project."""
     project_obj = db.Project.get(project_id)
-    project_data = api.parse_db_project(project_obj)
+    project_data = parse_db_project(project_obj)
     is_success = submit_lims_project(project_data)
     if is_success:
         project_obj.is_locked = True

@@ -7,7 +7,9 @@ import click
 import ruamel.yaml
 
 from cgadmin.report.core import report
-from cgadmin.store import api, models
+from cgadmin.store import models
+from cgadmin.store.api import AdminDatabase
+from cgadmin.store.parse import parse_db_project
 from cgadmin.log import init_log
 from cgadmin import lims
 
@@ -31,7 +33,7 @@ def root(context, config, database, log_level):
             'username': os.environ['CGLIMS_USERNAME'],
             'password': os.environ['CGLIMS_PASSWORD'],
         }
-    context.obj['db'] = api.connect(context.obj['database'])
+    context.obj['db'] = AdminDatabase(context.obj['database'])
 
 
 @root.command()
@@ -81,7 +83,7 @@ def upload(context, project_id):
     lims_api = ClinicalLims(context.obj['lims']['host'],
                             context.obj['lims']['username'],
                             context.obj['lims']['password'])
-    project_data = api.parse_db_project(new_project)
+    project_data = parse_db_project(new_project)
     lims_project = lims.new_lims_project(context.obj['db'], lims_api, project_data)
     new_project.lims_id = lims_project.id
     context.obj['db'].Project.save(new_project)
