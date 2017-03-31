@@ -37,7 +37,7 @@ def parse_db_project(new_project):
             family_data['samples'].append(sample_data)
 
             # remove None elements
-            for key in sample_data.keys():
+            for key in list(sample_data.keys()):
                 if sample_data[key] is None:
                     del sample_data[key]
 
