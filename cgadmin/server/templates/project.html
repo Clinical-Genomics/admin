@@ -11,6 +11,14 @@
 {% endblock %}
 
 {% block content_main %}
+  {% if not project.is_locked and project.samples|list|length > 0 %}
+  <section>
+    <form method="POST" action="{{ url_for('submit_project', project_id=project.id) }}">
+      <button type="submit" class="btn btn-primary form-control">Submit project</button>
+    </form>
+  </section>
+  {% endif %}
+
   <section>
     <div class="card">
       <div class="card-block">
