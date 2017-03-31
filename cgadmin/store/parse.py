@@ -27,15 +27,20 @@ def parse_db_project(new_project):
                 'source': sample.source,
                 'container': sample.container,
                 'container_name': sample.container_name,
+                'well_position': sample.well_position,
                 'quantity': sample.quantity,
             }
-            if sample.well_position:
-                sample_data['well_position'] = sample.well_position
             for parent_id in ('father', 'mother'):
                 parent_sample = getattr(sample, parent_id)
                 if parent_sample:
                     sample_data[parent_id] = parent_sample.name
             family_data['samples'].append(sample_data)
+
+            # remove None elements
+            for key in sample_data.keys():
+                if sample_data[key] is None:
+                    del sample_data[key]
+
         project_data['families'].append(family_data)
 
     return project_data
