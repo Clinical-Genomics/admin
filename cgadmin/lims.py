@@ -114,7 +114,7 @@ def group_containers(project_data):
     for family_data in project_data['families']:
         for sample_data in family_data['samples']:
             if sample_data['is_external'] or sample_data['container'] == 'Tube':
-                container_name = sample_data['container_name'] or sample_data['name']
+                container_name = sample_data.get('container_name') or sample_data['name']
                 container_name_full = "tube_{}".format(container_name)
                 container_groups[container_name_full] = [sample_data]
             elif sample_data['container'] == '96 well plate':
@@ -122,8 +122,7 @@ def group_containers(project_data):
                     container_groups[sample_data['container_name']] = []
                 container_groups[sample_data['container_name']].append(sample_data)
             else:
-                raise ValueError("unsupported container: {}"
-                                 .format(sample_data['container']))
+                raise ValueError("unsupported container: {}".format(sample_data['container']))
     return container_groups
 
 
