@@ -91,7 +91,7 @@ def project(project_id):
 @login_required
 def projects(project_id=None):
     """Add a new project to the database."""
-    if request.method == 'POST' and request.files['orderform']: 
+    if request.method == 'POST' and request.files['orderform']:
         project_data = collect_project_data()
         submit_lims_project(project_data)
         return redirect(url_for('index'))
@@ -118,7 +118,9 @@ def submit_project(project_id):
     if is_success:
         project_obj.is_locked = True
         db.Project.save(project_obj)
-    return redirect(url_for('index'))
+        return redirect(url_for('index'))
+    else:
+        return redirect(request.referrer)
 
 
 @app.route('/projects/<int:project_id>/families', methods=['POST'])
@@ -267,7 +269,7 @@ def submit_lims_project(project_data):
         message_path.append(step)
         message_path.append(error.message)
         flash(' -> '.join(message_path), 'danger')
-        return redirect(request.referrer)
+        return False
     except ValueError as error:
         flash(error.args[0], 'danger')
         return False
