@@ -30,8 +30,7 @@ def new_lims_project(admin_db, lims_api, project_data):
     for container_name, samples in container_groups.items():
         lims_container = make_container(lims_api, container_name)
         for sample_data in samples:
-            lims_sample = make_sample(lims_api, sample_data, lims_project,
-                                      lims_container)
+            lims_sample = make_sample(lims_api, sample_data, lims_project, lims_container)
             log.info("added new LIMS sample: %s", lims_sample.id)
 
     return lims_project
@@ -132,8 +131,7 @@ def make_project(lims_api, project_data, researcher_id='3'):
     log.info("using researcher: %s", researcher.name)
 
     # create a new LIMS project
-    new_limsproject = Project.create(lims_api, researcher=researcher,
-                                     name=project_data['name'])
+    new_limsproject = Project.create(lims_api, researcher=researcher, name=project_data['name'])
     # add UDFs
     customer_udf = 'Customer project reference'
     new_limsproject.udf[customer_udf] = project_data['customer']

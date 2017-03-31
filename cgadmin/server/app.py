@@ -114,13 +114,14 @@ def submit_project(project_id):
     """Submit and lock a project."""
     project_obj = db.Project.get(project_id)
     project_data = parse_db_project(project_obj)
-    is_success = submit_lims_project(project_data)
-    if is_success:
+    lims_project = submit_lims_project(project_data)
+    if lims_project:
         project_obj.is_locked = True
+        project_obj.lims_id = lims_project.id
         db.Project.save(project_obj)
         return redirect(url_for('index'))
     else:
-        return redirect(request.referrer)
+        return redirect(url_for('project', project_id=project_obj.id))
 
 
 @app.route('/projects/<int:project_id>/families', methods=['POST'])
@@ -222,14 +223,6 @@ def api_projects():
     return jsonify(success=True, project_id=lims_project.id)
 
 
-@app.route('/orderforms', methods=['POST'])
-def orderforms():
-    """Upload order form in Excel format to submit new project."""
-    project_data = collect_project_data()
-    submit_lims_project(project_data)
-    return redirect(url_for('index'))
-
-
 # register blueprints
 app.register_blueprint(public_bp)
 
@@ -274,7 +267,7 @@ def submit_lims_project(project_data):
         flash(error.args[0], 'danger')
         return False
     flash("submitted new project: {}!".format(lims_project.id), 'success')
-    return True
+    return lims_project
 
 
 class ProtectedModelView(ModelView):
