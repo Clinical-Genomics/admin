@@ -45,7 +45,7 @@ class FlaskSQLService(object):
 
         # Ensure that the session is removed on app context teardown so we
         # don't leave any sessions open after the request ends.
-        @app.teardown_request
+        @app.teardown_appcontext
         def shutdown_session(response_or_exc):
             self.remove()
             return response_or_exc
