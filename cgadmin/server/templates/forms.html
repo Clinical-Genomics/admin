@@ -168,7 +168,7 @@
 {% endmacro %}
 
 {% macro select_box(name, items, selected=None, records=False) %}
-  <select class="form-control form-control-sm" name="{{ name }}" required>
+  <select class="form-control form-control-sm" name="{{ name }}">
     <option {% if not selected %}selected{% endif %} disabled>Select...</option>
     {% if items is mapping %}
       {% for category, items in items.items() %}
