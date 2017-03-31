@@ -90,7 +90,7 @@ def project(project_id):
 @login_required
 def projects(project_id=None):
     """Add a new project to the database."""
-    if request.method == 'POST' and 'orderform' in request.files:
+    if request.method == 'POST' and request.files['orderform']: 
         project_data = collect_project_data()
         submit_lims_project(project_data)
         return redirect(url_for('index'))
