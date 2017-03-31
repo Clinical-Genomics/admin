@@ -174,7 +174,7 @@ def add_sample_udfs(lims_sample, sample_data):
     lims_sample.udf['Status'] = sample_data['status']
     lims_sample.udf['Sequencing Analysis'] = sample_data['application_tag']
     lims_sample.udf['Application Tag Version'] = sample_data['application_tag_version']
-    lims_sample.udf['Source'] = sample_data['source'] or 'NA'
+    lims_sample.udf['Source'] = sample_data.get('source') or 'NA'
     lims_sample.udf['familyID'] = family_data['name']
     lims_sample.udf['customer'] = sample_data['customer']
     for parent_id in ['mother', 'father']:
@@ -184,7 +184,7 @@ def add_sample_udfs(lims_sample, sample_data):
 
     lims_sample.udf['Reads missing (M)'] = sample_data['apptag'].reads
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
-    require_qcok = 'yes' if family_data['require_qcok'] else 'no'
+    require_qcok = 'yes' if family_data.get('require_qcok') else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
 
     if sample_data.get('quantity'):
