@@ -108,6 +108,14 @@ def projects(project_id=None):
     return redirect(url_for('project', project_id=project_obj.id))
 
 
+@app.route('/projects/<int:project_id>/delete', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    """Delete pending project from the database."""
+    db.Project.destroy(project_id)
+    return redirect(url_for('index'))
+
+
 @app.route('/projects/<int:project_id>/submit', methods=['POST'])
 @login_required
 def submit_project(project_id):
