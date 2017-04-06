@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content_main %}
+  <section>
+    {{ invoice_table() }}
+  </section>
+{% endblock %}
+
+{% macro invoice_table() %}
+  <h4>Invoices</h4>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Date</th>
+        <th>Customer</th>
+        <th>Sent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+        <tr>
+          <td>
+            <a href="{{ url_for('invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_id }}</a>
+          </td>
+          <td>{{ invoice.invoiced_at }}</td>
+          <td>{{ invoice.customer.name }}</td>
+          <td>{{ 'Yes' if invoice.is_sent }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4">No invoices.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}

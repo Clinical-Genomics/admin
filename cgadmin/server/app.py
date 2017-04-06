@@ -231,6 +231,21 @@ def api_projects():
     return jsonify(success=True, project_id=lims_project.id)
 
 
+@app.route('/invoices')
+def invoices():
+    """Display invoices."""
+    invoice_q = (db.Invoice.filter(models.Invoice.costcenter)
+                   .order_by(models.Invoice.invoiced_at.desc()))
+    return render_template('invoices.html', invoices=invoice_q)
+
+
+@app.route('/invoices/<int:invoice_id>')
+def invoice(invoice_id):
+    """Display an invoice."""
+    invoice_obj = db.Invoice.get(invoice_id)
+    return render_template('invoice.html', invoice=invoice_obj, data=invoice_obj.data)
+
+
 # register blueprints
 app.register_blueprint(public_bp)
 
@@ -289,6 +304,11 @@ class ProtectedModelView(ModelView):
 
 class ApplicationTagVersionView(ProtectedModelView):
     column_filters = ['version', 'is_accredited', 'apptag']
+
+
+class InvoiceView(ProtectedModelView):
+    column_filters = ('customer', 'costcenter')
+    column_exclude_list = ('_data')
 
 
 with app.app_context():
