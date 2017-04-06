@@ -234,7 +234,7 @@ def api_projects():
 @app.route('/invoices')
 def invoices():
     """Display invoices."""
-    invoice_q = (db.Invoice.filter(models.Invoice.costcenter)
+    invoice_q = (db.Invoice.filter(models.Invoice._data != None)
                    .order_by(models.Invoice.invoiced_at.desc()))
     return render_template('invoices.html', invoices=invoice_q)
 

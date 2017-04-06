@@ -1,43 +1,45 @@
 {% extends "layout.html" %}
 
 {% block content_main %}
-  <section>
-    <div class="row">
-      <div class="col">
-        <h4>Fakturaunderlag</h4>
-        <h5>Clinical Genomics</h5>
+  {% for costcenter in ['kth', 'ki'] %}
+    <section>
+      <div class="row">
+        <div class="col">
+          <h4>Fakturaunderlag</h4>
+          <h5>Clinical Genomics</h5>
+        </div>
+        <div class="col">{{ costcenter|upper }}</div>
+        <div class="col">
+          <p>Nummer: {{ invoice.invoice_id }}-{{ costcenter }}</p>
+          <p>Datum: {{ invoice.invoiced_at }}</p>
+        </div>
       </div>
-      <div class="col">{{ invoice.costcenter|upper }}</div>
-      <div class="col">
-        <p>Nummer: {{ invoice.invoice_id }}</p>
-        <p>Datum: {{ invoice.invoiced_at }}</p>
-      </div>
-    </div>
-  </section>
-  <section>
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Prov</th>
-          <th>Clinical Genomics ID</th>
-          <th>Analys</th>
-          <th>Order ID</th>
-          <th>Ankomstdatum</th>
-          <th>Pris</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sample in data.samples %}
+    </section>
+    <section>
+      <table class="table table-hover">
+        <thead>
           <tr>
-            <td>{{ sample.name }}</td>
-            <td>{{ sample.lims_id }}</td>
-            <td>{{ sample.application_tag }}</td>
-            <td>{{ sample.project }}</td>
-            <td>{{ sample.date }}</td>
-            <td>{{ sample.price|round()|int }} SEK</td>
+            <th>Prov</th>
+            <th>Clinical Genomics ID</th>
+            <th>Analys</th>
+            <th>Order ID</th>
+            <th>Ankomstdatum</th>
+            <th>Pris</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
+        </thead>
+        <tbody>
+          {% for sample in data.samples %}
+            <tr>
+              <td>{{ sample.name }}</td>
+              <td>{{ sample.lims_id }}</td>
+              <td>{{ sample.application_tag }}</td>
+              <td>{{ sample.project }}</td>
+              <td>{{ sample.date }}</td>
+              <td>{{ sample.prices[costcenter]|round()|int }} SEK</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endfor %}
 {% endblock %}
