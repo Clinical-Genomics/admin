@@ -287,6 +287,10 @@ class ProtectedModelView(ModelView):
         return redirect(url_for('login.login', next=request.url))
 
 
+class ApplicationTagVersionView(ProtectedModelView):
+    column_filters = ['version', 'is_accredited', 'apptag']
+
+
 with app.app_context():
     admin.add_view(ProtectedModelView(models.User, db.session))
     admin.add_view(ProtectedModelView(models.Customer, db.session))
@@ -294,7 +298,7 @@ with app.app_context():
     admin.add_view(ProtectedModelView(models.Family, db.session))
     admin.add_view(ProtectedModelView(models.Sample, db.session))
     admin.add_view(ProtectedModelView(models.ApplicationTag, db.session))
-    admin.add_view(ProtectedModelView(models.ApplicationTagVersion, db.session))
+    admin.add_view(ApplicationTagVersionView(models.ApplicationTagVersion, db.session))
     admin.add_view(ProtectedModelView(models.Invoice, db.session))
     admin.add_view(ProtectedModelView(models.Method, db.session))
 

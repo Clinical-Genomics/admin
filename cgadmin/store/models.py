@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import ruamel.yaml
 from sqlalchemy import Column, types, orm, ForeignKey, UniqueConstraint, Table
 from sqlservice import declarative_base, event
 
@@ -289,3 +290,15 @@ class Invoice(Model):
     customer_id = Column(ForeignKey(Customer.id), nullable=False)
     invoice_id = Column(types.String(32), nullable=False)
     invoiced_at = Column(types.Date, default=datetime.now)
+    costcenter = Column(types.Enum('kth', 'ki'))
+    _data = Column(types.Text)
+
+    @property
+    def data(self):
+        """Store data for an invoice as a YAML string."""
+        yaml_data = ruamel.yaml.safe_load(self._data) if self._data else {}
+        return yaml_data
+
+    @data.setter
+    def data(self, yaml_data):
+        self._data = ruamel.yaml.dump(yaml_data) if yaml_data else None
