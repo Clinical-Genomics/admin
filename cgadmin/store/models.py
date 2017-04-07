@@ -288,7 +288,7 @@ class Invoice(Model):
 
     id = Column(types.Integer, primary_key=True)
     customer_id = Column(ForeignKey(Customer.id), nullable=False)
-    invoice_id = Column(types.String(32), nullable=False)
+    invoice_id = Column(types.String(32), nullable=False, unique=True)
     invoiced_at = Column(types.Date, default=datetime.now)
     costcenter = Column(types.Enum('kth', 'ki'))
     _data = Column(types.Text)

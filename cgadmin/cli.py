@@ -12,6 +12,7 @@ from cgadmin.store.api import AdminDatabase
 from cgadmin.store.parse import parse_db_project
 from cgadmin.log import init_log
 from cgadmin import lims
+from cgadmin.invoice.cli import invoice
 
 log = logging.getLogger(__name__)
 
@@ -110,3 +111,4 @@ def customer(context, cust_id, fields):
 
 
 root.add_command(report)
+root.add_command(invoice)

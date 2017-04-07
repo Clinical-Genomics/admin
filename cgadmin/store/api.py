@@ -28,3 +28,8 @@ class AdminDatabase(SQLClient):
             "enum": [apptag.name for apptag in self.ApplicationTag]
         }
         return schema_project
+
+    def invoice(self, invoice_id):
+        """Fetch invoice record from the database."""
+        invoice_obj = self.Invoice.filter_by(invoice_id=invoice_id).first()
+        return invoice_obj

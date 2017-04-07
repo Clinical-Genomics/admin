@@ -3,43 +3,47 @@
 {% block content_main %}
   {% for costcenter in ['kth', 'ki'] %}
     <section>
-      <div class="row">
-        <div class="col">
-          <h4>Fakturaunderlag</h4>
-          <h5>Clinical Genomics</h5>
+      <div class="card">
+        <div class="card-block">
+          <div class="row">
+            <div class="col">
+              <h4>Fakturaunderlag</h4>
+              <h5>Clinical Genomics</h5>
+            </div>
+            <div class="col">{{ costcenter|upper }}</div>
+            <div class="col">
+              <p>Nummer: {{ invoice.invoice_id }}-{{ costcenter }}</p>
+              <p>Datum: {{ invoice.invoiced_at }}</p>
+            </div>
+          </div>
         </div>
-        <div class="col">{{ costcenter|upper }}</div>
-        <div class="col">
-          <p>Nummer: {{ invoice.invoice_id }}-{{ costcenter }}</p>
-          <p>Datum: {{ invoice.invoiced_at }}</p>
+        <div class="card-block">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Prov</th>
+                <th>Clinical Genomics ID</th>
+                <th>Analys</th>
+                <th>Order ID</th>
+                <th>Ankomstdatum</th>
+                <th>Pris</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sample in data.samples %}
+                <tr>
+                  <td>{{ sample.name }}</td>
+                  <td>{{ sample.lims_id }}</td>
+                  <td>{{ sample.application_tag }}</td>
+                  <td>{{ sample.project }}</td>
+                  <td>{{ sample.date }}</td>
+                  <td>{{ sample.prices[costcenter]|round()|int }} SEK</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
-    </section>
-    <section>
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Prov</th>
-            <th>Clinical Genomics ID</th>
-            <th>Analys</th>
-            <th>Order ID</th>
-            <th>Ankomstdatum</th>
-            <th>Pris</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for sample in data.samples %}
-            <tr>
-              <td>{{ sample.name }}</td>
-              <td>{{ sample.lims_id }}</td>
-              <td>{{ sample.application_tag }}</td>
-              <td>{{ sample.project }}</td>
-              <td>{{ sample.date }}</td>
-              <td>{{ sample.prices[costcenter]|round()|int }} SEK</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
     </section>
   {% endfor %}
 {% endblock %}
