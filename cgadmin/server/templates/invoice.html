@@ -43,6 +43,11 @@
             </tbody>
           </table>
         </div>
+        <div class="card-footer text-center">
+          <a href="{{ url_for('invoice_dl', invoice_id=invoice.id, costcenter=costcenter) }}">
+            Download Excel
+          </a>
+        </div>
       </div>
     </section>
   {% endfor %}

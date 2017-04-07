@@ -6,7 +6,7 @@ from cglims.api import ClinicalLims
 from cglims.apptag import ApplicationTag
 import coloredlogs
 from flask import (abort, Flask, render_template, request, redirect, url_for,
-                   flash, jsonify)
+                   flash, jsonify, send_from_directory)
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_bootstrap import Bootstrap
@@ -19,6 +19,7 @@ from cgadmin.store import models
 from cgadmin.store.parse import parse_db_project
 from cgadmin.lims import new_lims_project
 from cgadmin.orderform import parse_orderform
+from cgadmin.invoice.render import render_xlsx
 from .admin import UserManagement
 from .flask_sqlservice import FlaskSQLService
 from .publicbp import blueprint as public_bp
@@ -244,6 +245,22 @@ def invoice(invoice_id):
     """Display an invoice."""
     invoice_obj = db.Invoice.get(invoice_id)
     return render_template('invoice.html', invoice=invoice_obj, data=invoice_obj.data)
+
+
+@app.route('/invoices/<int:invoice_id>/<costcenter>/download')
+def invoice_dl(invoice_id, costcenter):
+    """Download Excel version of an invoice."""
+    invoice_obj = db.Invoice.get(invoice_id)
+    data = invoice_obj.data
+    data['project'] = getattr(invoice_obj.customer, "project_account_{}".format(costcenter))
+    workbook = render_xlsx(data, costcenter)
+
+    temp_dir = tempfile.gettempdir()
+    fname = "Invoice_{}_{}.xlsx".format(invoice_obj.invoice_id, costcenter.upper())
+    excel_path = os.path.join(temp_dir, fname)
+    workbook.save(excel_path)
+
+    return send_from_directory(directory=temp_dir, filename=fname, as_attachment=True)
 
 
 # register blueprints
