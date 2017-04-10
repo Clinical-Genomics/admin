@@ -102,15 +102,13 @@ class UserManagement(object):
             if resp.ok:
                 userinfo = resp.json()
 
-                # check if the user is whitelisted
-                email = userinfo['email']
-                user_obj = this.db.User.filter_by(email=email).first()
+                user_data = dict(email=userinfo['email'], name=userinfo['name'],
+                                 avatar=userinfo['picture'],google_id=userinfo['id'])
+                user_obj = this.db.User.filter_by(email=user_data['email']).first()
                 if user_obj is None:
-                    flash("email not whitelisted: {}".format(email), 'danger')
-                    return redirect(url_for('index'))
-
-                user_obj.update(name=userinfo['name'], avatar=userinfo['picture'],
-                                google_id=userinfo['id'])
+                    user_obj = user_data
+                else:
+                    user_obj.update(**user_data)
 
                 user_obj = this.db.User.save(user_obj)
                 login_user(user_obj)
