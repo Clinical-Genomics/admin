@@ -43,9 +43,13 @@
       {% for project in projects %}
         <tr>
           <td>
-            <a href="{{ url_for('project', project_id=project.id) }}">
+            {% if project.is_locked %}
               {{ project.name }}
-            </a>
+            {% else %}
+              <a href="{{ url_for('project', project_id=project.id) }}">
+                {{ project.name }}
+              </a>
+            {% endif %}
           </td>
           <td>{{ project.user.name }}</td>
           <td>
@@ -77,14 +81,14 @@
 {% macro customer_form() %}
   <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">
     <div class="row">
-      <div class="col-8">
+      <div class="col-10">
         <select class="form-control" name="customers" multiple required>
           {% for customer in customers %}
             <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.customer_id }})</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-4">
+      <div class="col-2">
         <button class="btn btn-primary form-control">Save</button>
       </div>
     </div>

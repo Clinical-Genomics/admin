@@ -159,7 +159,7 @@
         <small class="form-text text-muted">Well pos.</small>
       </div>
       <div class="col">
-        <button class="btn btn-primary btn-sm form-control" type="submit">
+        <button class="btn btn-{{ 'secondary' if sample else 'primary' }} btn-sm form-control" type="submit">
           {{ 'Update' if sample else 'Add' }}
         </button>
       </div>

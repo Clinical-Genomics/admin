@@ -103,7 +103,7 @@ class UserManagement(object):
                 userinfo = resp.json()
 
                 user_data = dict(email=userinfo['email'], name=userinfo['name'],
-                                 avatar=userinfo['picture'],google_id=userinfo['id'])
+                                 avatar=userinfo['picture'], google_id=userinfo['id'])
                 user_obj = this.db.User.filter_by(email=user_data['email']).first()
                 if user_obj is None:
                     user_obj = user_data
