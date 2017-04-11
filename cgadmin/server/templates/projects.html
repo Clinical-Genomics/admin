@@ -81,14 +81,14 @@
 {% macro customer_form() %}
   <form method="POST" action="{{ url_for('link_customers', user_id=current_user.id) }}">
     <div class="row">
-      <div class="col-10">
+      <div class="col-8">
         <select class="form-control" name="customers" multiple required>
           {% for customer in customers %}
             <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.customer_id }})</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-2">
+      <div class="col-4">
         <button class="btn btn-primary form-control">Save</button>
       </div>
     </div>

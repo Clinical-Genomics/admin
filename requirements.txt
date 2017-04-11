@@ -16,3 +16,4 @@ xlrd
 jsonschema
 coloredlogs
 openpyxl
+requests

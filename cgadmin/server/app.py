@@ -23,6 +23,7 @@ from cgadmin.invoice.render import render_xlsx
 from .admin import UserManagement
 from .flask_sqlservice import FlaskSQLService
 from .publicbp import blueprint as public_bp
+from .mailgun import Mailgun
 
 
 coloredlogs.install(level='INFO')
@@ -39,6 +40,8 @@ USER_DATABASE_PATH = os.environ['USER_DATABASE_PATH']
 CGLIMS_HOST = os.environ['CGLIMS_HOST']
 CGLIMS_USERNAME = os.environ['CGLIMS_USERNAME']
 CGLIMS_PASSWORD = os.environ['CGLIMS_PASSWORD']
+MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
+MAILGUN_DOMAIN_NAME = os.environ['MAILGUN_DOMAIN_NAME']
 
 app.config.from_object(__name__)
 
@@ -46,6 +49,7 @@ db = FlaskSQLService(model_class=models.Model)
 user = UserManagement(db)
 admin = Admin(name='Clinical Admin', template_mode='bootstrap3')
 lims_api = ClinicalLims(CGLIMS_HOST, CGLIMS_USERNAME, CGLIMS_PASSWORD)
+mail = Mailgun()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -271,6 +275,7 @@ db.init_app(app)
 user.init_app(app)
 Bootstrap(app)
 admin.init_app(app)
+mail.init_app(app)
 
 app.jinja_env.globals.update(db=db, constants=constants)
 
@@ -307,6 +312,8 @@ def submit_lims_project(project_data):
         flash(error.args[0], 'danger')
         return False
     flash("submitted new project: {}!".format(lims_project.id), 'success')
+    if lims_project.name.isdigit():
+        mail.submit_to_lims(lims_project.name)
     return lims_project
 
 
