@@ -80,11 +80,12 @@ def check_family(lims_api, family_data):
         sample_map = {sample_data['name'] for sample_data in family_data['samples']}
         for sample_data in relations:
             for parent_key in ('mother', 'father'):
-                parent_id = sample_data[parent_key]
-                if parent_id and parent_id not in sample_map:
-                    sample_name = sample_data['name']
-                    raise ValueError("sample relation error: {}, {} -> {}"
-                                     .format(sample_name, parent_key, parent_id))
+                if parent_key in sample_data:
+                    parent_id = sample_data[parent_key]
+                    if parent_id and parent_id not in sample_map:
+                        sample_name = sample_data['name']
+                        raise ValueError("sample relation error: {}, {} -> {}"
+                                         .format(sample_name, parent_key, parent_id))
 
     if family_data['delivery_type'] == 'scout':
         if 'panels' not in family_data:
