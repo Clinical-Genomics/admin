@@ -13,15 +13,19 @@ def render_xlsx(data, costcenter):
     wb = load_workbook(template_path)
     ws = wb.active
     ws['C1'] = costcenter.upper()
-    ws['F1'] = data['invoice_id']
+    ws['F1'] = "{}-{}".format(data['invoice_id'], costcenter)
     ws['F2'] = datetime.datetime.today().date()
     ws['C7'] = data['project']
-    ws['C13'] = data['contact']['name']
-    ws['C14'] = data['contact']['email']
-    ws['C15'] = data['reference']
-    ws['C16'] = data['name']
-    ws['C17'] = data['address']
-    ws['C20'] = data['agreement']
+    ws['C13'] = data['contact'][costcenter]['name']
+    ws['C14'] = data['contact'][costcenter]['email']
+    ws['C15'] = data['contact'][costcenter]['reference']
+    ws['C16'] = data['contact'][costcenter]['customer_name']
+    ws['C17'] = data['contact'][costcenter]['address']
+    ws['C20'] = "{} / {}".format(data['customer_id'], data['customer_name'])
+
+    if data.get('agreement'):
+        ws['A21'] = 'Avtaltets diarienummer'
+        ws['C21'] = data['agreement']
 
     samples_start = 24
     for index, sample_data in enumerate(data['samples']):
@@ -34,7 +38,7 @@ def render_xlsx(data, costcenter):
         ws["F{}".format(row)] = sample_data['prices'][costcenter]
 
     ws["E{}".format(row + 2)] = 'Total'
-    ws["F{}".format(row + 2)] = "=SUM(F{}, F{})".format(samples_start, row)
+    ws["F{}".format(row + 2)] = "=SUM(F{}: F{})".format(samples_start, row)
 
     header_rows = [5, 12, 19, 23, row + 2]
     for header_row in header_rows:
