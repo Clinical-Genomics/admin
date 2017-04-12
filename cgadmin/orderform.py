@@ -8,7 +8,7 @@ REV_SEX_MAP = {value: key for key, value in SEX_MAP.items()}
 def parse_orderform(excel_path):
     """Parse out information from an order form."""
     workbook = xlrd.open_workbook(excel_path)
-    orderform_sheet = workbook.sheet_by_name('order form')
+    orderform_sheet = workbook.sheet_by_name('orderform')
     raw_samples = relevant_rows(orderform_sheet)
     parsed_samples = [parse_sample(raw_sample) for raw_sample in raw_samples]
     parsed_families = group_families(parsed_samples)
