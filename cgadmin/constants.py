@@ -23,7 +23,7 @@ APPLICATIONS = {
     'RNA': ['RNADEPR030', 'RNLDEPR030', 'RNAPOAR030', 'RNLPOAR030']
 }
 ALL_APPLICATIONS = list(itertools.chain.from_iterable(APPLICATIONS.values()))
-PANELS = ['mtDNA', 'IBMFS', 'PIDCAD', 'SKD', 'OMIM', 'ID', 'CTD', 'NJU', 'ATX',
+PANELS = ['mtDNA', 'IBMFS', 'PIDCAD', 'SKD', 'OMIM-AUTO', 'ID', 'CTD', 'NJU', 'ATX',
           'SPG', 'Ataxi', 'AD', 'MIT', 'ENDO', 'IEM', 'EP', 'HYP', 'DSD', 'SEXDIF',
           'SEXDET', 'NMD', 'PID', 'ET']
 PRIORITIES = ['standard', 'priority', 'express', 'research']
