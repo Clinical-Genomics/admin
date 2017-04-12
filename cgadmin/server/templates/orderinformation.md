@@ -3,7 +3,7 @@ Can be used for both exomes and whole genomes (EXT and WGT) and only in cases wh
 and in the same family. 
 All samples in the family have to be either exome or whole genome.
 
-# Relation
+# Providing parental relationships (mother, father)
 For a case containing more than one sample the possible parental relationship between the samples should be filled in to get a better 
 analysis. This is filled in for the child. If this is left out, the samples will be treated as unrelated in the analysis.
 
@@ -25,7 +25,9 @@ This creates a lot of work for us so we rather see that you are using the same f
 
 Process:
 
-1. Add a family as usual (with a new family-id)
+1. Add a family (with a new family-id) and fill in "Original family-id" from the original case
 2. For samples where you want to use existing sequencing data, choose "data" as "Source"
 3. You can either use the same sample name as the original sample or use a new sample name AND fill in the original sample name
    under "Original sample".
+4. You need to fill in the rest of the information (sex, gene panel, state of illness) for all samples as ususal - this will
+   **not** be fetched from the original sample.
