@@ -32,6 +32,7 @@ SECRET_KEY = 'unsafe!!!'
 BOOTSTRAP_SERVE_LOCAL = 'FLASK_DEBUG' in os.environ
 TEMPLATES_AUTO_RELOAD = True
 SQL_DATABASE_URI = os.environ['CGADMIN_SQL_DATABASE_URI']
+SQL_POOL_RECYCLE = 3600
 
 # user management
 GOOGLE_OAUTH_CLIENT_ID = os.environ['GOOGLE_OAUTH_CLIENT_ID']
@@ -318,6 +319,7 @@ def submit_lims_project(project_data):
 
 
 class ProtectedModelView(ModelView):
+
     def is_accessible(self):
         return current_user.is_authenticated and current_user.is_admin
 

@@ -4,7 +4,9 @@ from sqlservice import SQLClient
 
 
 class FlaskSQLService(object):
+
     """Flask extension for sqlservice.SQLClient instance."""
+
     def __init__(self,
                  app=None,
                  model_class=None,
