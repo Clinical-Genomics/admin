@@ -313,8 +313,8 @@ def submit_lims_project(project_data):
         flash(error.args[0], 'danger')
         return False
     flash("submitted new project: {}!".format(lims_project.id), 'success')
-    if lims_project.name.isdigit():
-        mail.submit_to_lims(lims_project.name)
+    # if lims_project.name.isdigit():
+    #     mail.submit_to_lims(lims_project.name)
     return lims_project
 
 
