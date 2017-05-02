@@ -146,7 +146,8 @@ def families(project_id):
     family_data = build_family()
     family_data['project'] = project_obj
     try:
-        check_familyname(project_obj.customer.customer_id, family_data['name'])
+        check_familyname(project_obj.customer.customer_id, family_data['name'],
+                         expect_family=family_data['existing_family'])
     except ValueError:
         return redirect(request.referrer)
 
@@ -168,7 +169,8 @@ def family(family_id):
     if family_data['name'] != family_obj.name:
         customer_id = family_obj.project.customer.customer_id
         try:
-            check_familyname(customer_id, family_data['name'])
+            check_familyname(customer_id, family_data['name'],
+                             expect_family=family_data['existing_family'])
         except ValueError:
             return redirect(request.referrer)
     family_obj.update(family_data)
@@ -372,8 +374,8 @@ def build_family():
         panels=panels,
         priority=request.form['priority'],
         delivery_type=request.form['delivery'],
-        require_qcok=(True if request.form.get('require_qcok') == 'on'
-                      else False),
+        require_qcok=(True if request.form.get('require_qcok') == 'on' else False),
+        existing_family=(True if request.form.get('existing_family') == 'on' else False),
     )
     return family_data
 
@@ -445,11 +447,14 @@ def check_triotag(family_obj):
                 db.Sample.save(sample_obj)
 
 
-def check_familyname(customer_id, family_name):
+def check_familyname(customer_id, family_name, expect_family=False):
     """Check existing families in LIMS."""
     lims_samples = lims_api.get_samples(udf={'customer': customer_id,
                                              'familyID': family_name})
-    if len(lims_samples) > 0:
+    if expect_family and len(lims_samples) == 0:
+        flash("can't find existing family: {}".format(family_name), 'danger')
+        raise ValueError(family_name)
+    elif not expect_family and len(lims_samples) > 0:
         flash("family name already exists: {}".format(family_name), 'danger')
         raise ValueError(family_name)
 

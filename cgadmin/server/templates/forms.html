@@ -87,8 +87,16 @@
       <small class="form-text text-muted">Data analysis</small>
     </div>
     <div class="col">
-      <input name="require_qcok" type="checkbox" {{ 'checked' if family and family.require_qcok }}>
-      <small class="form-text text-muted">Require QC = OK</small>
+      <div class="row">
+        <div class="col">
+          <input name="require_qcok" type="checkbox" {{ 'checked' if family and family.require_qcok }}>
+          <small class="form-text text-muted">Require QC = OK</small>
+        </div>
+        <div class="col">
+          <input name="existing_family" type="checkbox" {{ 'checked' if family and family.existing_family }}>
+          <small class="form-text text-muted">Existing family</small>
+        </div>
+      </div>
     </div>
     <div class="col">
       <button type="submit" class="btn btn-{{ 'secondary' if family else 'primary' }} form-control">
