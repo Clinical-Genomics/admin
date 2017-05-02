@@ -32,7 +32,7 @@ SECRET_KEY = 'unsafe!!!'
 BOOTSTRAP_SERVE_LOCAL = 'FLASK_DEBUG' in os.environ
 TEMPLATES_AUTO_RELOAD = True
 SQL_DATABASE_URI = os.environ['CGADMIN_SQL_DATABASE_URI']
-SQL_POOL_RECYCLE = 3600
+SQL_POOL_RECYCLE = 7200
 
 # user management
 GOOGLE_OAUTH_CLIENT_ID = os.environ['GOOGLE_OAUTH_CLIENT_ID']
@@ -245,10 +245,14 @@ def invoices():
     return render_template('invoices.html', invoices=invoice_q)
 
 
-@app.route('/invoices/<int:invoice_id>')
+@app.route('/invoices/<int:invoice_id>', methods=['GET', 'POST'])
 def invoice(invoice_id):
     """Display an invoice."""
     invoice_obj = db.Invoice.get(invoice_id)
+    if request.method == 'POST':
+        invoice_obj.comment = request.form.get('comment') or invoice_obj.comment
+        db.Invoice.save(invoice_obj)
+        flash("updated invoice information for: {}".format(invoice_obj.invoice_id), 'info')
     return render_template('invoice.html', invoice=invoice_obj, data=invoice_obj.data)
 
 
