@@ -115,6 +115,10 @@
   {% endif %}
     <div class="row space-below">
       <div class="col pr-0">
+        <input name="existing_sample" type="checkbox" {{ 'checked' if sample and sample.existing_sample }}>
+        <small class="form-text text-muted">Existing</small>
+      </div>
+      <div class="col pr-0">
         <input class="form-control form-control-sm" name="name" value="{{ sample.name if sample else old_form.name }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
         <small class="form-text text-muted">Name</small>
       </div>

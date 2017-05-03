@@ -17,23 +17,81 @@ def new_lims_project(admin_db, lims_api, project_data):
     """Create a new project with samples in LIMS."""
     validate(project_data, schema_project)
     prepare_data(admin_db, project_data)
+
+    # separate existing from new samples
+    new_samples = []
+    existing_samples = []
     for family_data in project_data['families']:
         check_family(lims_api, family_data)
         for sample_data in family_data['samples']:
             log.debug("checking sample: %s", sample_data['name'])
             check_sample(lims_api, sample_data)
+            if sample_data['existing_sample']:
+                existing_samples.append(sample_data)
+            else:
+                new_samples.append(sample_data)
 
-    lims_project = make_project(lims_api, project_data, researcher_id='3')
-    log.info("added new LIMS project: %s", lims_project.id)
+    if existing_samples:
+        # update information about existing samples
+        for sample_data in existing_samples:
+            log.info("updating existing sample: {}".format(sample_data['name']))
+            update_existing_sample(lims_api, sample_data)
 
-    container_groups = group_containers(project_data)
-    for container_name, samples in container_groups.items():
-        lims_container = make_container(lims_api, container_name)
-        for sample_data in samples:
-            lims_sample = make_sample(lims_api, sample_data, lims_project, lims_container)
-            log.info("added new LIMS sample: %s", lims_sample.id)
+    if new_samples:
+        lims_project = make_project(lims_api, project_data, researcher_id='3')
+        log.info("added new LIMS project: %s", lims_project.id)
+        container_groups = group_containers(project_data)
+        for container_name, samples in container_groups.items():
+            lims_container = make_container(lims_api, container_name)
+            for sample_data in samples:
+                lims_sample = make_sample(lims_api, sample_data, lims_project, lims_container)
+                log.info("added new LIMS sample: %s", lims_sample.id)
 
-    return lims_project
+        return lims_project
+
+
+def update_existing_sample(lims_api, sample_data):
+    """Update information about an existing sample."""
+    lims_samples = lims_api.get_samples(name=sample_data['name'],
+                                        udf={'customer': sample_data['customer']})
+    lims_sample = lims_samples[0]
+    if sample_data.get('sex'):
+        old_value = lims_sample.udf.get('Gender')
+        new_value = SEX_MAP.get(sample_data['sex'])
+        log.info("updating 'Gender': %s -> %s", old_value, new_value)
+        lims_sample.udf['Gender'] = new_value
+
+    if sample_data.get('status'):
+        udf_key = 'Status'
+        old_value = lims_sample.udf.get(udf_key)
+        new_value = sample_data['status']
+        log.info("updating %s: %s -> %s", udf_key, old_value, new_value)
+        lims_sample.udf[udf_key] = new_value
+
+    for parent_id in ['mother', 'father']:
+        new_value = sample_data.get(parent_id)
+        if new_value:
+            udf_key = "{}ID".format(parent_id)
+            old_value = lims_sample.udf.get(udf_key)
+            log.info("updating '%s': %s -> %s", udf_key, old_value, new_value)
+            lims_sample.udf[udf_key] = new_value
+
+    if sample_data.get('capture_kit'):
+        udf_key = 'Capture Library version'
+        old_value = lims_sample.udf.get(udf_key)
+        new_value = sample_data['capture_kit']
+        log.info("updating '%s': %s -> %s", udf_key, old_value, new_value)
+        lims_sample.udf[udf_key] = new_value
+
+    if sample_data['family'].get('panels'):
+        udf_key = 'Gene List'
+        old_value = lims_sample.udf.get(udf_key)
+        new_value = ';'.join(sample_data['family']['panels'])
+        log.info("updating '%s': %s -> %s", udf_key, old_value, new_value)
+        lims_sample.udf[udf_key] = new_value
+
+    log.info("saving sample data for: %s", lims_sample.id)
+    lims_sample.put()
 
 
 def check_sample(lims_api, sample_data):
@@ -41,16 +99,22 @@ def check_sample(lims_api, sample_data):
     lims_samples = lims_api.get_samples(name=sample_data['name'],
                                         udf={'customer': sample_data['customer']})
     # TODO: could add check if other samples are canceled...
-    if len(lims_samples) > 0:
+    if sample_data['existing_sample'] and len(lims_samples) == 0:
+        raise ValueError("can't find existing sample: {}".format(sample_data['name']))
+    elif not sample_data['existing_sample'] and len(lims_samples) > 0:
         raise ValueError("duplicate sample name: {}".format(sample_data['name']))
 
     family_id = sample_data['family']['name']
     lims_samples = lims_api.get_samples(udf={'customer': sample_data['customer'],
                                              'familyID': family_id})
-    if len(lims_samples) > 0:
+    if sample_data['family']['existing_family'] and len(lims_samples) == 0:
+        raise ValueError("can't find existing family: {}".format(family_id))
+    elif not sample_data['family']['existing_family'] and len(lims_samples) > 0:
         raise ValueError("duplicate family name: {}".format(family_id))
 
-    if sample_data['is_external']:
+    if sample_data['existing_sample']:
+        pass
+    elif sample_data['is_external']:
         if sample_data['apptag'].is_panel and sample_data.get('capture_kit') is None:
             raise ValueError("external exome samples needs 'capture kit'!")
     else:
@@ -97,13 +161,14 @@ def prepare_data(admin_db, project_data):
     """Prepare the data before processing it."""
     for family_data in project_data['families']:
         for sample_data in family_data['samples']:
-            apptag_name = sample_data['application_tag']
-            apptag_obj = admin_db.ApplicationTag.filter_by(name=apptag_name).first()
-            if apptag_obj is None:
-                raise ValueError("unknown application tag: {}".format(apptag_name))
-            sample_data['apptag'] = ApplicationTag(apptag_name)
-            sample_data['is_external'] = sample_data['apptag'].is_external
-            sample_data['application_tag_version'] = apptag_obj.versions[0].version
+            if 'application_tag' in sample_data:
+                apptag_name = sample_data['application_tag']
+                apptag_obj = admin_db.ApplicationTag.filter_by(name=apptag_name).first()
+                if apptag_obj is None:
+                    raise ValueError("unknown application tag: {}".format(apptag_name))
+                sample_data['apptag'] = ApplicationTag(apptag_name)
+                sample_data['is_external'] = sample_data['apptag'].is_external
+                sample_data['application_tag_version'] = apptag_obj.versions[0].version
             sample_data['family'] = family_data
             sample_data['customer'] = project_data['customer']
 
@@ -113,6 +178,9 @@ def group_containers(project_data):
     container_groups = {}
     for family_data in project_data['families']:
         for sample_data in family_data['samples']:
+            if sample_data['existing_sample']:
+                # skip existing samples
+                continue
             if sample_data['is_external'] or sample_data['container'] == 'Tube':
                 container_name = sample_data.get('container_name') or sample_data['name']
                 container_name_full = "tube_{}".format(container_name)

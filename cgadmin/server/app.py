@@ -209,7 +209,8 @@ def samples(family_id=None, sample_id=None):
     sample_data = build_sample()
     if sample_data:
         customer_id = family_obj.project.customer.customer_id
-        check_samplename(customer_id, sample_data['name'])
+        check_samplename(customer_id, sample_data['name'],
+                         expect_sample=sample_data['existing_sample'])
 
         if family_id:
             sample_data['family_id'] = family_id
@@ -381,7 +382,12 @@ def build_family():
 
 
 def build_sample():
-    required_fields = ['name', 'sex', 'application_tag']
+    existing_sample = True if request.form.get('existing_sample') == 'on' else False
+    if existing_sample:
+        required_fields = ['name']
+    else:
+        required_fields = ['name', 'sex', 'application_tag']
+
     for field in required_fields:
         if not request.form.get(field):
             flash("missing required information: {}".format(field), 'danger')
@@ -389,39 +395,43 @@ def build_sample():
 
     sample_data = dict(
         name=request.form['name'],
-        sex=request.form['sex'],
+        sex=request.form.get('sex'),
         status=request.form.get('status'),
+        existing_sample=existing_sample,
     )
 
-    apptag_obj = db.ApplicationTag.get(request.form['application_tag'])
-    cg_apptag = ApplicationTag(apptag_obj.name)
-    sample_data['application_tag'] = apptag_obj
+    if request.form.get('application_tag'):
+        apptag_obj = db.ApplicationTag.get(request.form['application_tag'])
+        cg_apptag = ApplicationTag(apptag_obj.name)
+        sample_data['application_tag'] = apptag_obj
 
-    if not cg_apptag.is_external:
-        # if the sample isn't externally sequenced
-        if not request.form.get('container'):
-            flash('you need to specify "container"', 'warning')
-            return None
-        if not request.form.get('source'):
-            flash('you need to specify "source"', 'warning')
-            return None
-
-        sample_data['container'] = request.form['container']
-        sample_data['source'] = request.form['source']
-        sample_data['quantity'] = request.form.get('quantity')
-        if sample_data['container'] == '96 well plate':
-            for field in ['container_name', 'well_position']:
-                if not request.form.get(field):
-                    flash("you need to specify '{}'".format(field), 'warning')
-                    return None
-                sample_data[field] = request.form[field]
-    else:
-        if cg_apptag.is_panel:
-            # expect capture kit for external samples
-            if 'capture_kit' not in request.form:
-                flash("external exomes; specify 'capture kit'", 'warning')
+        if not cg_apptag.is_external:
+            # if the sample isn't externally sequenced
+            if not request.form.get('container'):
+                flash('you need to specify "container"', 'warning')
                 return None
-            sample_data['capture_kit'] = request.form['capture_kit']
+            if not request.form.get('source'):
+                flash('you need to specify "source"', 'warning')
+                return None
+
+            sample_data['container'] = request.form['container']
+            sample_data['source'] = request.form['source']
+            sample_data['quantity'] = request.form.get('quantity')
+            if sample_data['container'] == '96 well plate':
+                for field in ['container_name', 'well_position']:
+                    if not request.form.get(field):
+                        flash("you need to specify '{}'".format(field), 'warning')
+                        return None
+                    sample_data[field] = request.form[field]
+        else:
+            if cg_apptag.is_panel:
+                # expect capture kit for external samples
+                if 'capture_kit' not in request.form:
+                    flash("external exomes; specify 'capture kit'", 'warning')
+                    return None
+                sample_data['capture_kit'] = request.form['capture_kit']
+    else:
+        sample_data['application_tag'] = None
 
     for parent_id in ['mother', 'father']:
         if parent_id in request.form:
@@ -459,10 +469,14 @@ def check_familyname(customer_id, family_name, expect_family=False):
         raise ValueError(family_name)
 
 
-def check_samplename(customer_id, sample_name):
+def check_samplename(customer_id, sample_name, expect_sample=False):
     """Check existing families in LIMS."""
     lims_samples = lims_api.get_samples(name=sample_name,
                                         udf={'customer': customer_id})
-    if len(lims_samples) > 0:
+
+    if expect_sample and len(lims_samples) == 0:
+        flash("can't find existing sample: {}".format(sample_name), 'danger')
+        return redirect(request.referrer)
+    elif not expect_sample and len(lims_samples) > 0:
         flash("sample name already exists: {}".format(sample_name), 'danger')
         return redirect(request.referrer)
