@@ -60,7 +60,7 @@ def index():
     if current_user.customers:
         customer_ids = [customer.id for customer in current_user.customers]
         project_filter = models.Project.customer_id.in_(customer_ids)
-        proj_q = db.Project.filter(project_filter)
+        proj_q = db.Project.filter(project_filter, models.Project.is_locked == None)
         customer_q = None
     else:
         customer_q = db.Customer.find()
