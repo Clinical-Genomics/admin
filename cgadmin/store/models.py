@@ -182,8 +182,8 @@ class Sample(Model):
     comment = Column(types.Text)
     existing_sample = Column(types.Boolean, default=False)
 
-    mother = orm.relationship('Sample', uselist=False, foreign_keys=[mother_id])
-    father = orm.relationship('Sample', uselist=False, foreign_keys=[father_id])
+    mother = orm.relationship('Sample', remote_side=[id], foreign_keys=[mother_id])
+    father = orm.relationship('Sample', remote_side=[id], foreign_keys=[father_id])
 
     def __unicode__(self):
         return self.name
