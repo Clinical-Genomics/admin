@@ -138,7 +138,7 @@ def relevant_rows(orderform_sheet):
             header_row = [cell.value for cell in row]
             current_row = None
         elif current_row == 'samples':
-            values = [cell.value for cell in row]
+            values = [str(cell.value) for cell in row]
             if values[0]:
                 # skip empty rows
                 sample_dict = dict(zip(header_row, values))
