@@ -21,7 +21,7 @@ def parse_reqs(req_path='./requirements.txt'):
 
 
 setup(name='cgadmin',
-      version='0.0.1',
+      version='1.0.0',
       description='Admin interface and order portal',
       url='https://github.com/Clinical-Genomics/cgadmin',
       author='Robin Andeer',
