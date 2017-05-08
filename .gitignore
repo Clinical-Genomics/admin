@@ -11,6 +11,7 @@ _DEVELOP/
 *.egg-info/
 __pycache__/
 *.pyc
+build/
 
 # Secret
 alembic.ini
