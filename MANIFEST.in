@@ -1,6 +1,9 @@
 include README.md
-include cgadmin/report/templates/*.html
+recursive-include cgadmin/report/templates *
 recursive-include cgadmin/invoice/templates *
+
+include requirements.txt
+include requirements-dev.txt
 
 recursive-include tests *
 recursive-exclude * __pycache__
