@@ -48,8 +48,7 @@ class Customer(Model):
     delivery_contact = orm.relationship('User', foreign_keys=[delivery_contact_id])
     invoice_contact = orm.relationship('User', foreign_keys=[invoice_contact_id])
     invoices = orm.relationship('Invoice', cascade='all,delete', backref='customer')
-    users = orm.relationship('User', secondary=customer_user_link, back_populates='customers',
-                             cascade='all,delete')
+    users = orm.relationship('User', secondary=customer_user_link, back_populates='customers')
     projects = orm.relationship('Project', cascade='all,delete', backref='customer')
 
     def __unicode__(self):
@@ -65,6 +64,7 @@ class User(Model, UserManagementMixin):
 
     is_admin = Column(types.Boolean, default=False)
     projects = orm.relationship('Project', backref='user')
+    customers = orm.relationship('Customer', secondary=customer_user_link, back_populates='users')
 
     def __unicode__(self):
         return self.name
