@@ -19,13 +19,13 @@
     </thead>
     <tbody>
       {% for invoice in invoices %}
-        <tr>
+        <tr {% if invoice.sent_at %} class="bg-success" {% endif %}>
           <td>
             <a href="{{ url_for('invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_id }}</a>
           </td>
           <td>{{ invoice.invoiced_at }}</td>
           <td>{{ invoice.customer.name }}</td>
-          <td>{{ 'Yes' if invoice.is_sent }}</td>
+          <td>{{ invoice.sent_at.date() if invoice.sent_at }}</td>
         </tr>
       {% else %}
         <tr>

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import os
 import tempfile
 
@@ -257,6 +258,15 @@ def invoice(invoice_id):
         db.Invoice.save(invoice_obj)
         flash("updated invoice information for: {}".format(invoice_obj.invoice_id), 'info')
     return render_template('invoice.html', invoice=invoice_obj, data=invoice_obj.data)
+
+
+@app.route('/invoices/<int:invoice_id>/send', methods=['POST'])
+def invoice_send(invoice_id):
+    """Mark an invoice as sent."""
+    invoice_obj = db.Invoice.get(invoice_id)
+    invoice_obj.sent_at = datetime.datetime.now()
+    db.Invoice.save(invoice_obj)
+    return redirect(url_for('invoice', invoice_id=invoice_id))
 
 
 @app.route('/invoices/<int:invoice_id>/<costcenter>/download')

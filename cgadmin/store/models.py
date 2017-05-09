@@ -289,6 +289,7 @@ class Invoice(Model):
     customer_id = Column(ForeignKey(Customer.id), nullable=False)
     invoice_id = Column(types.String(32), nullable=False, unique=True)
     invoiced_at = Column(types.Date, default=datetime.now)
+    sent_at = Column(types.DateTime)
     costcenter = Column(types.Enum('kth', 'ki'))
     comment = Column(types.Text)
     excel_file_kth = Column(types.BLOB)

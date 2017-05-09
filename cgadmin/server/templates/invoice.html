@@ -1,43 +1,58 @@
 {% extends "layout.html" %}
 
 {% block content_main %}
-  <section>
-    <div class="card">
-      <div class="card-block">
-        <div class="row">
-          <div class="col">
-
+  {% if invoice.sent_at %}
+    <section>
+      <div class="card">
+        <div class="card-block">
+          <p><strong>Sent</strong>: {{ invoice.sent_at }}</p>
+          <p><strong>Comment</strong>: {{ invoice.comment or 'no comment' }}</p>
+        </div>
+      </div>
+    </section>
+  {% else %}
+    <section>
+      <div class="card">
+        <div class="card-block">
+          <div class="row">
+            <div class="col">
+              <form action="{{ url_for('invoice_send', invoice_id=invoice.id) }}" method="POST">
+                <button class="btn btn-primary form-control">Mark as sent</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <div class="card">
-      <div class="card-header">Edit invoice</div>
-      <div class="card-block">
-        <form action="{{ url_for('invoice', invoice_id=invoice.id) }}" method="POST" enctype="multipart/form-data">
-          <div class="form-group">
-            <textarea name="comment" rows="5" class="form-control">{{ invoice.comment if invoice.comment }}</textarea>
-          </div>
-          <div class="form-group">
-            <div class="row">
-              {% for costcenter in ['kth', 'ki'] %}
-                <div class="col">
-                  <label class="custom-file">
-                    <input name="excel-{{ costcenter }}" type="file" class="custom-file-input">
-                    <span class="custom-file-control" data-content="Choose modified {{ costcenter|upper }} invoice..."></span>
-                  </label>
-                </div>
-              {% endfor %}
+    <section>
+      <div class="card">
+        <div class="card-header">Edit invoice</div>
+        <div class="card-block">
+          <form action="{{ url_for('invoice', invoice_id=invoice.id) }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <textarea name="comment" rows="5" class="form-control" placeholder="Add comment...">
+                {{ invoice.comment if invoice.comment }}
+              </textarea>
             </div>
-          </div>
-          <button class="btn btn-primary form-control">Save</button>
-        </form>
+            <div class="form-group">
+              <div class="row">
+                {% for costcenter in ['kth', 'ki'] %}
+                  <div class="col">
+                    <label class="custom-file">
+                      <input name="excel-{{ costcenter }}" type="file" class="custom-file-input">
+                      <span class="custom-file-control" data-content="Choose modified {{ costcenter|upper }} invoice..."></span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <button class="btn btn-default form-control">Save</button>
+          </form>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  {% endif %}
 
   {% for costcenter in ['kth', 'ki'] %}
     <section>
