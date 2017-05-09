@@ -67,8 +67,37 @@
                     {{ family_form(constants, family=family) }}
                   </form>
                 </div>
+
+                {% if family and family.existing_family %}
+                  <div class="card-block">
+                    <h4 class="card-title text-muted">Existing samples</h4>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Sex</th>
+                          <th>Status</th>
+                          <th>Father</th>
+                          <th>Mother</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for sample in family.existing_samples %}
+                          <tr>
+                            <td>{{ sample.name }}</td>
+                            <td>{{ sample.sex }}</td>
+                            <td>{{ sample.status }}</td>
+                            <td>{{ sample.father if sample.father }}</td>
+                            <td>{{ sample.mother if sample.mother }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% endif %}
+
                 <div class="card-block">
-                  <h4 class="card-title">Samples</h4>
+                  <h4 class="card-title">New samples</h4>
                   {{ samples_table(family.samples, constants, apptags, add_new=True, family_id=family.id, old_form=form) }}
                 </div>
               </div>

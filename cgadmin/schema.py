@@ -75,6 +75,9 @@ schema_family = {
         "require_qcok": {
             "type": "boolean"
         },
+        "keep_vis": {
+            "type": "boolean"
+        },
         "samples": {
             "type": "array",
             "items": schema_sample

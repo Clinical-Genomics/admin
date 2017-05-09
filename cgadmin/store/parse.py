@@ -16,7 +16,8 @@ def parse_db_project(new_project):
             'delivery_type': family.delivery_type,
             'require_qcok': family.require_qcok,
             'samples': [],
-            'existing_family': True if family.existing_family else False,
+            'existing_family': family.existing_family,
+            'keep_vis': family.keep_vis,
         }
         for sample in family.samples:
             sample_data = {

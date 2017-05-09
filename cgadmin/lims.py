@@ -9,6 +9,7 @@ from jsonschema import validate
 from cgadmin.schema import schema_project
 
 SEX_MAP = {'male': 'M', 'female': 'F', 'unknown': 'unknown'}
+GENDER_MAP = {value: key for key, value in SEX_MAP.items()}
 CON_TYPES = {'Tube': 2, '96 well plate': 1}
 log = logging.getLogger(__name__)
 
@@ -253,6 +254,7 @@ def add_sample_udfs(lims_sample, sample_data):
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
     require_qcok = 'yes' if family_data.get('require_qcok') else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
+    lims_sample.udf['keep vis'] = family_data['keep_vis']
 
     if sample_data.get('quantity'):
         lims_sample.udf['Quantity'] = sample_data['quantity']

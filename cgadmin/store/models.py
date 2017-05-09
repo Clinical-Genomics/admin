@@ -115,6 +115,7 @@ class Family(Model):
     delivery_type = Column(types.Enum(*constants.DELIVERY_TYPES), nullable=False)
     require_qcok = Column(types.Boolean, default=False)
     existing_family = Column(types.Boolean, default=False)
+    keep_vis = Column(types.Boolean, default=False)
 
     project_id = Column(ForeignKey(Project.id), nullable=False)
     samples = orm.relationship('Sample', cascade='all,delete', backref='family')

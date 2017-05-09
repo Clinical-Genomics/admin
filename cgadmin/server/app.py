@@ -18,7 +18,7 @@ from werkzeug.utils import secure_filename
 from cgadmin import constants
 from cgadmin.store import models
 from cgadmin.store.parse import parse_db_project
-from cgadmin.lims import new_lims_project
+from cgadmin.lims import new_lims_project, GENDER_MAP
 from cgadmin.orderform import parse_orderform
 from cgadmin.invoice.render import render_xlsx
 from .admin import UserManagement
@@ -89,6 +89,18 @@ def project(project_id):
     """View a project."""
     project_obj = db.Project.get(project_id)
     apptags = db.ApplicationTag.order_by('category')
+    for family_obj in project_obj.families:
+        if family_obj.existing_family:
+            # fetch information about existing samples from LIMS
+            lims_samples = lims_api.case(project_obj.customer.customer_id, family_obj.name)
+            samples_data = [dict(
+                name=sample.name,
+                sex=GENDER_MAP.get(sample.udf.get('Gender')),
+                status=sample.udf.get('Status'),
+                father=sample.udf.get('fatherID'),
+                mother=sample.udf.get('motherID'),
+            ) for sample in lims_samples]
+            family_obj.existing_samples = samples_data
     return render_template('project.html', project=project_obj, apptags=apptags,
                            form=request.form)
 
@@ -387,6 +399,7 @@ def build_family():
         delivery_type=request.form['delivery'],
         require_qcok=(True if request.form.get('require_qcok') == 'on' else False),
         existing_family=(True if request.form.get('existing_family') == 'on' else False),
+        keep_vis=(True if request.form.get('keep_vis') == 'on' else False),
     )
     return family_data
 
