@@ -71,7 +71,7 @@
                 {% if family and family.existing_family %}
                   <div class="card-block">
                     <h4 class="card-title text-muted">Existing samples</h4>
-                    <table class="table table-bordered">
+                    <table class="table table-bordered table-sm">
                       <thead>
                         <tr>
                           <th>Name</th>
@@ -79,6 +79,7 @@
                           <th>Status</th>
                           <th>Father</th>
                           <th>Mother</th>
+                          <th>Analysis</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -89,6 +90,7 @@
                             <td>{{ sample.status }}</td>
                             <td>{{ sample.father if sample.father }}</td>
                             <td>{{ sample.mother if sample.mother }}</td>
+                            <td>{{ 'Excluded' if sample.excluded else 'Included' }}</td>
                           </tr>
                         {% endfor %}
                       </tbody>

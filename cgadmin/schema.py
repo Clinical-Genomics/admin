@@ -78,6 +78,9 @@ schema_family = {
         "keep_vis": {
             "type": "boolean"
         },
+        "exclude_analysis": {
+            "type": "boolean"
+        },
         "samples": {
             "type": "array",
             "items": schema_sample

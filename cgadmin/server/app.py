@@ -421,6 +421,7 @@ def build_sample():
         sex=request.form.get('sex'),
         status=request.form.get('status'),
         existing_sample=existing_sample,
+        exclude_analysis=(True if request.form.get('exclude_analysis') == 'on' else False),
     )
 
     if request.form.get('application_tag'):

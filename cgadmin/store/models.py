@@ -179,6 +179,7 @@ class Sample(Model):
     father_id = Column(ForeignKey('sample.id'))
     comment = Column(types.Text)
     existing_sample = Column(types.Boolean, default=False)
+    exclude_analysis = Column(types.Boolean, default=False)
 
     mother = orm.relationship('Sample', remote_side=[id], foreign_keys=[mother_id])
     father = orm.relationship('Sample', remote_side=[id], foreign_keys=[father_id])

@@ -255,6 +255,7 @@ def add_sample_udfs(lims_sample, sample_data):
     require_qcok = 'yes' if family_data.get('require_qcok') else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
     lims_sample.udf['keep vis'] = family_data['keep_vis']
+    lims_sample.udf['exclude analysis'] = sample_data['exclude_analysis']
 
     if sample_data.get('quantity'):
         lims_sample.udf['Quantity'] = sample_data['quantity']

@@ -123,6 +123,10 @@
         <small class="form-text text-muted">Existing</small>
       </div>
       <div class="col pr-0">
+        <input name="exclude_analysis" type="checkbox" {{ 'checked' if sample and sample.exclude_analysis }}>
+        <small class="form-text text-muted">Excluded</small>
+      </div>
+      <div class="col pr-0">
         <input class="form-control form-control-sm" name="name" value="{{ sample.name if sample else old_form.name }}" pattern="[a-zA-Z0-9-]+" placeholder="Sample name" required>
         <small class="form-text text-muted">Name</small>
       </div>

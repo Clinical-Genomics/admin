@@ -31,7 +31,8 @@ def parse_db_project(new_project):
                 'container_name': sample.container_name,
                 'well_position': sample.well_position,
                 'quantity': sample.quantity,
-                'existing_sample': True if sample.existing_sample else False,
+                'existing_sample': sample.existing_sample,
+                'exclude_analysis': sample.exclude_analysis,
             }
             for parent_id in ('father', 'mother'):
                 parent_sample = getattr(sample, parent_id)
