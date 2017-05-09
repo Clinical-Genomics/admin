@@ -26,7 +26,7 @@ def new_lims_project(admin_db, lims_api, project_data):
         for sample_data in family_data['samples']:
             log.debug("checking sample: %s", sample_data['name'])
             check_sample(lims_api, sample_data)
-            if sample_data['existing_sample']:
+            if sample_data.get('existing_sample'):
                 existing_samples.append(sample_data)
             else:
                 new_samples.append(sample_data)
@@ -99,9 +99,9 @@ def check_sample(lims_api, sample_data):
     lims_samples = lims_api.get_samples(name=sample_data['name'],
                                         udf={'customer': sample_data['customer']})
     # TODO: could add check if other samples are canceled...
-    if sample_data['existing_sample'] and len(lims_samples) == 0:
+    if sample_data.get('existing_sample') and len(lims_samples) == 0:
         raise ValueError("can't find existing sample: {}".format(sample_data['name']))
-    elif not sample_data['existing_sample'] and len(lims_samples) > 0:
+    elif not sample_data.get('existing_sample') and len(lims_samples) > 0:
         raise ValueError("duplicate sample name: {}".format(sample_data['name']))
 
     family_id = sample_data['family']['name']
@@ -112,7 +112,7 @@ def check_sample(lims_api, sample_data):
     elif not sample_data['family']['existing_family'] and len(lims_samples) > 0:
         raise ValueError("duplicate family name: {}".format(family_id))
 
-    if sample_data['existing_sample']:
+    if sample_data.get('existing_sample'):
         pass
     elif sample_data['is_external']:
         if sample_data['apptag'].is_panel and sample_data.get('capture_kit') is None:
@@ -178,7 +178,7 @@ def group_containers(project_data):
     container_groups = {}
     for family_data in project_data['families']:
         for sample_data in family_data['samples']:
-            if sample_data['existing_sample']:
+            if sample_data.get('existing_sample'):
                 # skip existing samples
                 continue
             if sample_data['is_external'] or sample_data['container'] == 'Tube':
