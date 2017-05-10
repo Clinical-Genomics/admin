@@ -127,7 +127,7 @@ def projects():
             ticket_id = open_ticket(lims_project.name)
             lims_project.name = ticket_id
             lims_project.put()
-        flash("opened new ticket for project: {}".format(ticket_id), 'info')
+            flash("opened new ticket for project: {}".format(ticket_id), 'info')
         return redirect(url_for('index'))
 
     project_data = build_project()
