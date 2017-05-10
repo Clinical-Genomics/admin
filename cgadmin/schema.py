@@ -62,7 +62,6 @@ schema_family = {
             "items": {
                 "enum": constants.PANELS,
             },
-            "minItems": 1,
             "uniqueItems": True
         },
         "priority": {

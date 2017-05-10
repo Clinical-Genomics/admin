@@ -357,8 +357,6 @@ def submit_lims_project(project_data):
         flash(error.args[0], 'danger')
         return False
     flash("submitted new project: {}!".format(lims_project.id), 'success')
-    # if lims_project.name.isdigit():
-    #     mail.submit_to_lims(lims_project.name)
     return lims_project
 
 
@@ -406,12 +404,16 @@ def build_project():
 
 def build_family():
     """Parse form data for a family."""
+    delivery_type = request.form['delivery']
     panels = request.form.getlist('panels')
+    if delivery_type == 'scout' and len(panels) == 0:
+        flash("you need to select at least one gene panel for Scout analysis")
+        return None
     family_data = dict(
         name=request.form['name'],
         panels=panels,
         priority=request.form['priority'],
-        delivery_type=request.form['delivery'],
+        delivery_type=delivery_type,
         require_qcok=(True if request.form.get('require_qcok') == 'on' else False),
         existing_family=(True if request.form.get('existing_family') == 'on' else False),
         keep_vis=(True if request.form.get('keep_vis') == 'on' else False),
