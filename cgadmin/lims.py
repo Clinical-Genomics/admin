@@ -100,9 +100,10 @@ def check_sample(lims_api, sample_data):
     lims_samples = lims_api.get_samples(name=sample_data['name'],
                                         udf={'customer': sample_data['customer']})
     # TODO: could add check if other samples are canceled...
-    if sample_data.get('existing_sample') and len(lims_samples) == 0:
+    existing_sample = sample_data.get('existing_sample')
+    if existing_sample and len(lims_samples) == 0:
         raise ValueError("can't find existing sample: {}".format(sample_data['name']))
-    elif not sample_data.get('existing_sample') and len(lims_samples) > 0:
+    elif not existing_sample and len(lims_samples) > 0:
         raise ValueError("duplicate sample name: {}".format(sample_data['name']))
 
     family_id = sample_data['family']['name']
@@ -113,7 +114,7 @@ def check_sample(lims_api, sample_data):
     elif not sample_data['family'].get('existing_family') and len(lims_samples) > 0:
         raise ValueError("duplicate family name: {}".format(family_id))
 
-    if sample_data.get('existing_sample'):
+    if existing_sample:
         pass
     elif sample_data['is_external']:
         if sample_data['apptag'].is_panel and sample_data.get('capture_kit') is None:
@@ -126,7 +127,7 @@ def check_sample(lims_api, sample_data):
             raise ValueError("non-external sample missing 'source': {}"
                              .format(sample_data['name']))
 
-    if sample_data['family']['delivery_type'] == 'scout':
+    if not existing_sample and sample_data['family']['delivery_type'] == 'scout':
         log.debug("sample intended for Scout upload, checking required fields")
         if sample_data.get('status') is None:
             raise ValueError("sample needs 'status' for upload to Scout: {}"
