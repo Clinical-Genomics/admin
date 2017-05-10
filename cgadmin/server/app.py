@@ -123,9 +123,10 @@ def projects():
     if request.method == 'POST' and request.files['orderform']:
         project_data = collect_project_data()
         lims_project = submit_lims_project(project_data)
-        ticket_id = open_ticket(lims_project.name)
-        lims_project.name = ticket_id
-        lims_project.put()
+        if not lims_project.name.isdigit():
+            ticket_id = open_ticket(lims_project.name)
+            lims_project.name = ticket_id
+            lims_project.put()
         flash("opened new ticket for project: {}".format(ticket_id), 'info')
         return redirect(url_for('index'))
 
