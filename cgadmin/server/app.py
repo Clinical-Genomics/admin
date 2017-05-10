@@ -83,11 +83,17 @@ def link_customers(user_id):
     return redirect(url_for('index'))
 
 
-@app.route('/projects/<int:project_id>')
+@app.route('/projects/<int:project_id>', methods=['GET', 'POST'])
 @login_required
 def project(project_id):
     """View a project."""
     project_obj = db.Project.get(project_id)
+    if request.method == 'POST':
+        project_data = build_project()
+        project_obj.update(project_data)
+        project_obj = db.Project.save(project_obj)
+        flash("project: {} updated".format(project_obj.name), 'info')
+
     apptags = db.ApplicationTag.order_by('category')
     for family_obj in project_obj.families:
         if family_obj.existing_family:
@@ -106,9 +112,8 @@ def project(project_id):
 
 
 @app.route('/projects', methods=['POST'])
-@app.route('/projects/<int:project_id>', methods=['POST'])
 @login_required
-def projects(project_id=None):
+def projects():
     """Add a new project to the database."""
     if request.method == 'POST' and request.files['orderform']:
         project_data = collect_project_data()
@@ -116,14 +121,8 @@ def projects(project_id=None):
         return redirect(url_for('index'))
 
     project_data = build_project()
-    if project_id:
-        project_obj = db.Project.get(project_id)
-        project_obj.update(project_data)
-        db.Project.save(project_obj)
-        flash("project: {} updated".format(project_obj.name), 'info')
-    else:
-        project_obj = db.Project.save(project_data)
-        flash("{} created".format(project_obj.name), 'info')
+    project_obj = db.Project.save(project_data)
+    flash("{} created".format(project_obj.name), 'info')
     return redirect(url_for('project', project_id=project_obj.id))
 
 
