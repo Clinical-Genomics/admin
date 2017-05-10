@@ -3,7 +3,7 @@
     <div class="form-group">
       <div class="row">
         <div class="col">
-          <input name="name" type="text" class="form-control" pattern="^[a-zA-Z0-9.-]*$" value="{{ project.name if project }}" placeholder="Project name" required>
+          <input name="name" type="text" class="form-control" value="{{ project.name if project }}" placeholder="Project name" required>
         </div>
         <div class="col">
           <select name="customer" class="form-control">

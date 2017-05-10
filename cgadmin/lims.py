@@ -254,8 +254,8 @@ def add_sample_udfs(lims_sample, sample_data):
     lims_sample.udf['Capture Library version'] = sample_data.get('capture_kit', 'NA')
     require_qcok = 'yes' if family_data.get('require_qcok') else 'no'
     lims_sample.udf['Process only if QC OK'] = require_qcok
-    lims_sample.udf['keep vis'] = family_data['keep_vis']
-    lims_sample.udf['exclude analysis'] = sample_data['exclude_analysis']
+    lims_sample.udf['keep vis'] = 'yes' if family_data.get('keep_vis') else 'no'
+    lims_sample.udf['exclude analysis'] = 'yes' if sample_data.get('exclude_analysis') else 'no'
 
     if sample_data.get('quantity'):
         lims_sample.udf['Quantity'] = sample_data['quantity']
