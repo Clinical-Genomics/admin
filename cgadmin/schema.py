@@ -6,8 +6,7 @@ schema_sample = {
     "type": "object",
     "properties": {
         "name": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9.-]*$"
+            "type": "string"
         },
         "sex": {
             "enum": constants.SEXES
