@@ -25,6 +25,7 @@ from .admin import UserManagement
 from .flask_sqlservice import FlaskSQLService
 from .publicbp import blueprint as public_bp
 from .mailgun import Mailgun
+from .osticket import OsTicket
 
 
 coloredlogs.install(level='INFO')
@@ -44,6 +45,8 @@ CGLIMS_USERNAME = os.environ['CGLIMS_USERNAME']
 CGLIMS_PASSWORD = os.environ['CGLIMS_PASSWORD']
 MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
 MAILGUN_DOMAIN_NAME = os.environ['MAILGUN_DOMAIN_NAME']
+OSTICKET_API_KEY = os.environ['OSTICKET_API_KEY']
+OSTICKET_DOMAIN = os.environ['OSTICKET_DOMAIN']
 
 app.config.from_object(__name__)
 
@@ -52,6 +55,7 @@ user = UserManagement(db)
 admin = Admin(name='Clinical Admin', template_mode='bootstrap3')
 lims_api = ClinicalLims(CGLIMS_HOST, CGLIMS_USERNAME, CGLIMS_PASSWORD)
 mail = Mailgun()
+osticket = OsTicket()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -118,7 +122,11 @@ def projects():
     """Add a new project to the database."""
     if request.method == 'POST' and request.files['orderform']:
         project_data = collect_project_data()
-        submit_lims_project(project_data)
+        lims_project = submit_lims_project(project_data)
+        ticket_id = open_ticket(lims_project.name)
+        lims_project.name = ticket_id
+        lims_project.put()
+        flash("opened new ticket for project: {}".format(ticket_id), 'info')
         return redirect(url_for('index'))
 
     project_data = build_project()
@@ -143,6 +151,11 @@ def submit_project(project_id):
     project_data = parse_db_project(project_obj)
     lims_project = submit_lims_project(project_data)
     if lims_project:
+        ticket_id = open_ticket(lims_project.name)
+        lims_project.name = ticket_id
+        lims_project.put()
+        flash("opened new ticket for project: {}".format(ticket_id), 'info')
+
         project_obj.is_locked = True
         project_obj.lims_id = lims_project.id
         db.Project.save(project_obj)
@@ -306,6 +319,7 @@ user.init_app(app)
 Bootstrap(app)
 admin.init_app(app)
 mail.init_app(app)
+osticket.init_app(app)
 
 app.jinja_env.globals.update(db=db, constants=constants)
 
@@ -504,3 +518,14 @@ def check_samplename(customer_id, sample_name, expect_sample=False):
     elif not expect_sample and len(lims_samples) > 0:
         flash("sample name already exists: {}".format(sample_name), 'danger')
         return redirect(request.referrer)
+
+
+def open_ticket(project_name):
+    """Open a new ticket in SupportSystem for a LIMS project."""
+    ticket_id = osticket.open_ticket(
+        name=current_user.name,
+        email=current_user.email,
+        subject=project_name,
+        message="New samples submitted",
+    )
+    return ticket_id
