@@ -23,9 +23,7 @@
     <div class="card">
       <div class="card-block">
         <h4 class="card-title space-below">Project details</h4>
-        <form method="POST" action="{{ url_for('projects', project_id=project.id) }}">
-          {{ project_form(constants, project=project) }}
-        </form>
+        {{ project_form(constants, project=project) }}
       </div>
     </div>
   </section>

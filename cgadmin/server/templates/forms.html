@@ -1,5 +1,5 @@
 {% macro project_form(constants, project=None, user=None, upload=False) %}
-  <form method="POST" action="{{ url_for('project', project_id=project.id) if project else url_for('projects') }}" enctype="multipart/form-data">
+  <form method="POST" action="{{ url_for('project', project_id=project.id) if project else url_for('projects') }}" {% if upload %} enctype="multipart/form-data" {% endif %}>
     <div class="form-group">
       <div class="row">
         <div class="col">
