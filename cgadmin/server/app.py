@@ -93,6 +93,7 @@ def project(project_id):
         project_obj.update(project_data)
         project_obj = db.Project.save(project_obj)
         flash("project: {} updated".format(project_obj.name), 'info')
+        return redirect(url_for('project', project_id=project_obj.id))
 
     apptags = db.ApplicationTag.order_by('category')
     for family_obj in project_obj.families:
