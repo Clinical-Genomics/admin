@@ -118,7 +118,8 @@ class Family(Model):
     keep_vis = Column(types.Boolean, default=False)
 
     project_id = Column(ForeignKey(Project.id), nullable=False)
-    samples = orm.relationship('Sample', cascade='all,delete', backref='family')
+    samples = orm.relationship('Sample', cascade='all,delete', backref='family',
+                               order_by='Sample.id')
 
     @event.before_save()
     def before_save(mapper, connection, target):
