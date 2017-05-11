@@ -43,13 +43,7 @@
       {% for project in projects %}
         <tr>
           <td>
-            {% if project.is_locked %}
-              {{ project.name }}
-            {% else %}
-              <a href="{{ url_for('project', project_id=project.id) }}">
-                {{ project.name }}
-              </a>
-            {% endif %}
+            <a href="{{ url_for('project', project_id=project.id) }}">{{ project.name }}</a>
           </td>
           <td>{{ project.user.name }}</td>
           <td>

@@ -62,7 +62,7 @@
                 <div class="card-block">
                   <h4 class="card-title">Family details</h4>
                   <form method="POST" action="{{ url_for('family', family_id=family.id) }}">
-                    {{ family_form(constants, family=family) }}
+                    {{ family_form(constants, family=family, project=project) }}
                   </form>
                 </div>
 
@@ -112,10 +112,10 @@
 {% macro samples_table(samples, constants, apptags, add_new=False, family_id=None,
                        old_form=None) %}
   {% for sample in samples %}
-    {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list)) }}
+    {{ sample_row_form(constants, apptags, sample=sample, other_samples=(samples|rejectattr('id', 'equalto', sample.id)|list), is_locked=project.is_locked) }}
   {% endfor %}
   {% if add_new %}
     {{ sample_row_form(constants, apptags, family_id=family_id,
-                       other_samples=samples, old_form=old_form) }}
+                       other_samples=samples, old_form=old_form, is_locked=project.is_locked) }}
   {% endif %}
 {% endmacro %}

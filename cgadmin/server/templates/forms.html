@@ -30,11 +30,13 @@
         </div>
       {% endif %}
 
-      <div class="col">
-        <button type="submit" class="btn btn-{{ 'secondary' if project else 'primary' }} form-control">
-          {{ 'Update project details' if project else 'Add new project' }}
-        </button>
-      </div>
+      {% if not project.is_locked %}
+        <div class="col">
+          <button type="submit" class="btn btn-{{ 'secondary' if project else 'primary' }} form-control">
+            {{ 'Update project details' if project else 'Add new project' }}
+          </button>
+        </div>
+      {% endif %}
     </div>
   </form>
 {% endmacro %}
@@ -103,15 +105,17 @@
       </div>
     </div>
     <div class="col">
-      <button type="submit" class="btn btn-{{ 'secondary' if family else 'primary' }} form-control">
-        {{ 'Update' if family else 'Add' }}
-      </button>
+      {% if not project.is_locked %}
+        <button type="submit" class="btn btn-{{ 'secondary' if family else 'primary' }} form-control">
+          {{ 'Update' if family else 'Add' }}
+        </button>
+      {% endif %}
     </div>
   </div>
 {% endmacro %}
 
 {% macro sample_row_form(constants, apptags, sample=None, family_id=None,
-                         other_samples=None, old_form=None) %}
+                         other_samples=None, old_form=None, is_locked=False) %}
   {% if sample %}
     <form action="{{ url_for('samples', sample_id=sample.id) }}" method="POST">
   {% else %}
@@ -179,9 +183,11 @@
         <small class="form-text text-muted">Well pos.</small>
       </div>
       <div class="col">
-        <button class="btn btn-{{ 'secondary' if sample else 'primary' }} btn-sm form-control" type="submit">
-          {{ 'Update' if sample else 'Add' }}
-        </button>
+        {% if not is_locked %}
+          <button class="btn btn-{{ 'secondary' if sample else 'primary' }} btn-sm form-control" type="submit">
+            {{ 'Update' if sample else 'Add' }}
+          </button>
+        {% endif %}
       </div>
     </div>
   </form>

@@ -64,8 +64,8 @@ def index():
         return render_template('index.html')
     if current_user.customers:
         customer_ids = [customer.id for customer in current_user.customers]
-        project_filter = models.Project.customer_id.in_(customer_ids)
-        proj_q = db.Project.filter(project_filter, models.Project.is_locked == None)
+        proj_q = (db.Project.filter(models.Project.customer_id.in_(customer_ids))
+                            .order_by(models.Project.created_at.desc()).limit(50))
         customer_q = None
     else:
         customer_q = db.Customer.find()
