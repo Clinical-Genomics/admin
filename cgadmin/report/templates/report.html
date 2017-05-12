@@ -106,7 +106,7 @@
               {% for sample in samples %}
                 <tr>
                   <td>{{ sample.name }}</td>
-                  <td>{{ sample.received_at.date() }}</td>
+                  <td>{{ sample.received_at }}</td>
                   <td>{{ sample.library_prep_method or "N/A" }}</td>
                   <td>{{ sample.sequencing_method or "N/A" }}</td>
                   <td>{{ sample.delivery_method or "N/A" }}</td>

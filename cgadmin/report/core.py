@@ -44,13 +44,7 @@ def export_report(admin_db, case_data):
             sample[method_type] = method
             sample['project'] = sample['project'].split()[0]
 
-        # parse dates into datetime objects
-        date_keys = set(['received_at', 'delivery_date'])
-        for date_key in date_keys:
-            if date_key in sample:
-                if not isinstance(sample[date_key], datetime):
-                    sample[date_key] = parser.parse(sample[date_key])
-        if all(date_key in sample for date_key in date_keys):
+        if all(date_key in sample for date_key in ['received_at', 'delivery_date']):
             processing_time = sample['delivery_date'] - sample['received_at']
             sample['processing_time'] = processing_time.days
 
