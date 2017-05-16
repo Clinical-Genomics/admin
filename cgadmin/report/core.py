@@ -44,7 +44,7 @@ def export_report(admin_db, case_data):
             sample[method_type] = method_obj
             sample['project'] = sample['project'].split()[0]
 
-        if all(date_key in sample for date_key in ['received_at', 'delivery_date']):
+        if all(sample.get(date_key) for date_key in ['received_at', 'delivery_date']):
             processing_time = sample['delivery_date'].date() - sample['received_at']
             sample['processing_time'] = processing_time.days
 
