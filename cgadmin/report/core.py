@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 import json
 
-from dateutil import parser
 import click
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -38,10 +37,11 @@ def export_report(admin_db, case_data):
             if document_raw is None:
                 continue
             doc_no, doc_version = [int(part) for part in document_raw.split(':')]
-            method = admin_db.Method.filter_by(document=doc_no).first()
-            if method is None or method.document_version != doc_version:
+            method_obj = admin_db.Method.filter_by(document=doc_no,
+                                                   document_version=doc_version).first()
+            if method_obj is None:
                 log.warn("method not found in admin db: %s", document_raw)
-            sample[method_type] = method
+            sample[method_type] = method_obj
             sample['project'] = sample['project'].split()[0]
 
         if all(date_key in sample for date_key in ['received_at', 'delivery_date']):
