@@ -45,7 +45,7 @@ def export_report(admin_db, case_data):
             sample['project'] = sample['project'].split()[0]
 
         if all(date_key in sample for date_key in ['received_at', 'delivery_date']):
-            processing_time = sample['delivery_date'] - sample['received_at']
+            processing_time = sample['delivery_date'].date() - sample['received_at']
             sample['processing_time'] = processing_time.days
 
     versions = []
