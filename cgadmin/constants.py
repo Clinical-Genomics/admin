@@ -25,7 +25,7 @@ APPLICATIONS = {
 ALL_APPLICATIONS = list(itertools.chain.from_iterable(APPLICATIONS.values()))
 PANELS = ['mtDNA', 'IBMFS', 'PIDCAD', 'SKD', 'OMIM-AUTO', 'ID', 'CTD', 'NJU', 'ATX',
           'SPG', 'Ataxi', 'AD', 'MIT', 'ENDO', 'IEM', 'EP', 'HYP', 'DSD', 'SEXDIF',
-          'SEXDET', 'NMD', 'PID', 'ET']
+          'SEXDET', 'NMD', 'PID', 'ET', 'PEDHEP']
 PRIORITIES = ['standard', 'priority', 'express', 'research']
 CUSTOMERS = [('cust003', 'CMMS'), ('cust002', 'Klinisk Genetik')]
 WELL_POSITIONS = ['A:1', 'B:1', 'C:1', 'D:1', 'E:1', 'F:1', 'G:1', 'H:1',
