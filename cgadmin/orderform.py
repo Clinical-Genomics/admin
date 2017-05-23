@@ -97,8 +97,7 @@ def parse_sample(raw_sample):
 
     if raw_sample['UDF/priority'].lower() == 'förtur':
         raw_sample['UDF/priority'] = 'priority'
-    quantity = (int(raw_sample['UDF/Quantity']) if raw_sample.get('UDF/Quantity')
-                else None)
+    quantity = (int(float(raw_sample['UDF/Quantity'])) if raw_sample.get('UDF/Quantity') else None)
 
     sample = {
         'name': raw_sample['Sample/Name'],
