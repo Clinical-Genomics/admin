@@ -139,10 +139,6 @@ def check_family(lims_api, family_data):
     if len(family_data['samples']) > 1:
         relations = [sample_data for sample_data in family_data['samples']
                      if (sample_data.get('mother') or sample_data.get('father'))]
-        if len(relations) == 0:
-            family_id = family_data['name']
-            raise ValueError("samples in family not related: {}".format(family_id))
-
         sample_map = {sample_data['name'] for sample_data in family_data['samples']}
         for sample_data in relations:
             for parent_key in ('mother', 'father'):
