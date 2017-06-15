@@ -88,7 +88,7 @@ class Project(Model):
     is_locked = Column(types.Boolean)
     lims_id = Column(types.String(32))
 
-    families = orm.relationship('Family', cascade='all,delete', backref='project')
+    families = orm.relationship('Family', backref='project')
 
     @property
     def samples(self):
@@ -117,9 +117,8 @@ class Family(Model):
     existing_family = Column(types.Boolean, default=False)
     keep_vis = Column(types.Boolean, default=False)
 
-    project_id = Column(ForeignKey(Project.id), nullable=False)
-    samples = orm.relationship('Sample', cascade='all,delete', backref='family',
-                               order_by='Sample.id')
+    project_id = Column(ForeignKey(Project.id, ondelete='CASCADE'), nullable=False)
+    samples = orm.relationship('Sample', backref='family', order_by='Sample.id')
 
     @event.before_save()
     def before_save(mapper, connection, target):
@@ -165,7 +164,7 @@ class Sample(Model):
                                        name='_family_name_uc'),)
 
     id = Column(types.Integer, primary_key=True)
-    family_id = Column(ForeignKey(Family.id), nullable=False)
+    family_id = Column(ForeignKey(Family.id, ondelete='CASCADE'), nullable=False)
     name = Column(types.String(64), nullable=False)
     sex = Column(types.Enum(*constants.SEXES))
     status = Column(types.Enum(*constants.STATUSES))
@@ -175,7 +174,7 @@ class Sample(Model):
     well_position = Column(types.Enum(*constants.WELL_POSITIONS))
     container_name = Column(types.String(64))
     capture_kit = Column(types.Enum(*constants.CAPTURE_KITS))
-    quantity = Column(types.Integer)
+    quantity = Column(types.String(32))
     mother_id = Column(ForeignKey('sample.id'))
     father_id = Column(ForeignKey('sample.id'))
     comment = Column(types.Text)
