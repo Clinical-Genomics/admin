@@ -97,7 +97,6 @@ def parse_sample(raw_sample):
 
     if raw_sample['UDF/priority'].lower() == 'förtur':
         raw_sample['UDF/priority'] = 'priority'
-    quantity = (int(float(raw_sample['UDF/Quantity'])) if raw_sample.get('UDF/Quantity') else None)
 
     sample = {
         'name': raw_sample['Sample/Name'],
@@ -109,7 +108,7 @@ def parse_sample(raw_sample):
         'panels': (raw_sample['UDF/Gene List'].split(';') if
                    raw_sample.get('UDF/Gene List') else None),
         'require_qcok': True if raw_sample['UDF/Process only if QC OK'] else False,
-        'quantity': quantity,
+        'quantity': raw_sample['UDF/Quantity'] if raw_sample.get('UDF/Quantity') else None,
         'application_tag': raw_sample['UDF/Sequencing Analysis'],
         'source': raw_sample['UDF/Source'].lower(),
         'status': raw_sample['UDF/Status'].lower(),
