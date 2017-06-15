@@ -123,6 +123,9 @@ def projects():
     if request.method == 'POST' and request.files['orderform']:
         project_data = collect_project_data()
         lims_project = submit_lims_project(project_data)
+        if not lims_project:
+            flash("couldn't create project from order form", 'danger')
+            return redirect(url_for('index'))
         if not lims_project.name.isdigit():
             ticket_id = open_ticket(lims_project.name)
             lims_project.name = ticket_id
