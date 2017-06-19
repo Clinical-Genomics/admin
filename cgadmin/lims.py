@@ -234,6 +234,7 @@ def add_sample_udfs(lims_sample, sample_data):
     family_data = sample_data['family']
     lims_sample.udf['priority'] = family_data['priority']
     lims_sample.udf['Data Analysis'] = family_data['delivery_type']
+    if 'panels' in family_data:
     lims_sample.udf['Gene List'] = ';'.join(family_data['panels'])
     lims_sample.udf['Gender'] = SEX_MAP.get(sample_data['sex'])
     lims_sample.udf['Status'] = sample_data['status']
