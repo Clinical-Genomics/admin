@@ -63,7 +63,8 @@ def index():
     if not current_user.is_authenticated:
         return render_template('index.html')
     if current_user.customers:
-        customer_ids = [customer.id for customer in current_user.customers]
+        customers = db.Customer.find() if current_user.is_admin else current_user.customers
+        customer_ids = [customer.id for customer in customers]
         proj_q = (db.Project.filter(models.Project.customer_id.in_(customer_ids))
                             .order_by(models.Project.created_at.desc()).limit(50))
         customer_q = None
