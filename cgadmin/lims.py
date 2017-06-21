@@ -104,7 +104,7 @@ def check_sample(lims_api, sample_data):
     if existing_sample and len(lims_samples) == 0:
         raise ValueError("can't find existing sample: {}".format(sample_data['name']))
     elif not existing_sample and len(lims_samples) > 0:
-        raise ValueError("duplicate sample name: {}".format(sample_data['name']))
+        flash("duplicate sample name: {}".format(sample_data['name']), 'warning')
 
     family_id = sample_data['family']['name']
     lims_samples = lims_api.get_samples(udf={'customer': sample_data['customer'],
@@ -112,7 +112,7 @@ def check_sample(lims_api, sample_data):
     if sample_data['family'].get('existing_family') and len(lims_samples) == 0:
         raise ValueError("can't find existing family: {}".format(family_id))
     elif not sample_data['family'].get('existing_family') and len(lims_samples) > 0:
-        raise ValueError("duplicate family name: {}".format(family_id))
+        flash("duplicate family name: {}".format(family_id), 'warning')
 
     if existing_sample:
         pass
