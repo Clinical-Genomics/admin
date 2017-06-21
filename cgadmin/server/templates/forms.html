@@ -1,4 +1,4 @@
-{% macro project_form(constants, project=None, user=None, upload=False) %}
+{% macro project_form(constants, customers, project=None, user=None, upload=False) %}
   <form method="POST" action="{{ url_for('project', project_id=project.id) if project else url_for('projects') }}" {% if upload %} enctype="multipart/form-data" {% endif %}>
     <div class="form-group">
       <div class="row">
@@ -10,7 +10,7 @@
             {% if project %}
               <option value="{{ project.customer.id }}" selected>{{ project.customer.name }}</option>
             {% else %}
-              {% for customer in user.customers %}
+              {% for customer in customers %}
                 <option value="{{ customer.id }}" selected>{{ customer.name }} ({{ customer.customer_id }})</option>
               {% endfor %}
             {% endif %}

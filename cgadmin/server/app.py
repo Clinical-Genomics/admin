@@ -67,11 +67,10 @@ def index():
         customer_ids = [customer.id for customer in customers]
         proj_q = (db.Project.filter(models.Project.customer_id.in_(customer_ids))
                             .order_by(models.Project.created_at.desc()).limit(50))
-        customer_q = None
     else:
-        customer_q = db.Customer.find()
+        customers = db.Customer.find()
         proj_q = None
-    return render_template('projects.html', projects=proj_q, customers=customer_q)
+    return render_template('projects.html', projects=proj_q, customers=customers)
 
 
 @app.route('/users/<int:user_id>/link', methods=['POST'])
