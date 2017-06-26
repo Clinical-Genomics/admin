@@ -3,6 +3,7 @@ import logging
 from xml.etree import ElementTree
 
 from cglims.apptag import ApplicationTag
+from flask import flash
 from genologics.entities import (Project, Researcher, Sample, Container,
                                  Containertype)
 from jsonschema import validate
