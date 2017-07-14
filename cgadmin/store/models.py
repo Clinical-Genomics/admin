@@ -239,7 +239,7 @@ class ApplicationTagVersion(Model):
     price_standard = Column(types.Integer)
     price_priority = Column(types.Integer)
     price_express = Column(types.Integer)
-    price_reserach = Column(types.Integer)
+    price_research = Column(types.Integer)
     is_accredited = Column(types.Boolean)
     description = Column(types.Text)
     limitations = Column(types.Text)
